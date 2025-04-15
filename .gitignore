@@ -1,0 +1,56 @@
+# Dependency directories
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Log files
+*.log
+logs/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Environment variables files (keep the example file)
+.env
+.env.*
+!.env.example
+
+# IDE and editor directories/files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Test results and coverage
+coverage/
+.nyc_output/
+
+# Optional production dependencies lock file (if needed)
+# package-lock.json # If using npm
+# yarn.lock # If using yarn
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Optional eslint cache
+.eslintcache
+
+# Optional TypeScript build info
+tsconfig.tsbuildinfo
+
+
+plan.md
