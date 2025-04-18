@@ -87,4 +87,18 @@ export class EnvironmentConfigService implements IConfigService {
      has(key: string): boolean {
         return this.config[key] !== undefined;
     }
+
+    reloadConfig(): void {
+        // Re-read process.env and update config
+        // Note: process.env is always live, but this allows explicit reloads if env changes at runtime
+        Object.assign(this.config, process.env);
+        // Optionally, re-validate required keys
+        const missingKeys = this.requiredKeys.filter(key => !this.has(key));
+        if (missingKeys.length > 0) {
+            const errorMsg = `[ConfigService] Missing required environment variables after reload: ${missingKeys.join(', ')}`;
+            console.error(errorMsg);
+            throw new Error(errorMsg);
+        }
+        console.info('[ConfigService] Configuration reloaded and required keys verified.');
+    }
 }
