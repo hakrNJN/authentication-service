@@ -10,5 +10,6 @@ export * from './login.dto';
 export * from './refresh-token.dto';
 export * from './reset-password.dto'; // Added
 export * from './signup.dto';
+export * from './verify-mfa.dto';
 // Export other DTOs as they are created
 

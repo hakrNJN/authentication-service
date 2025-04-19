@@ -1,3 +1,4 @@
+import { ChallengeNameType } from '@aws-sdk/client-cognito-identity-provider'; // Import ChallengeNameType
 import { BaseError } from '../../shared/errors/BaseError';
 
 /**
@@ -50,5 +51,28 @@ export class PasswordResetRequiredError extends AuthenticationError {
     }
 }
 
-// Add other specific errors as needed (e.g., MFARequiredError)
+/**
+ * Error indicating that Multi-Factor Authentication is required to complete login.
+ */
+export class MfaRequiredError extends AuthenticationError {
+    public readonly session: string;
+    public readonly challengeName: ChallengeNameType;
+    public readonly challengeParameters: Record<string, string>; // Include challenge parameters
+
+    constructor(
+        session: string,
+        challengeName: ChallengeNameType,
+        challengeParameters: Record<string, string> = {}, // Initialize as empty object
+        message = 'Multi-Factor Authentication Required'
+    ) {
+        // Use a specific status code like 401 or a custom one if preferred by the API design
+        // For simplicity, using 401 but indicating MFA requirement in the message/name.
+        // Alternatively, a 202 Accepted could be used in the controller/middleware.
+        super(message, 401);
+        this.name = 'MfaRequiredError';
+        this.session = session;
+        this.challengeName = challengeName;
+        this.challengeParameters = challengeParameters; // Store parameters
+    }
+}
 

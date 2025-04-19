@@ -4,13 +4,13 @@ import { IAuthService } from '../../application/interfaces/IAuthService';
 import { TYPES } from '../../shared/constants/types';
 // Import DTO types
 import { AuthenticationError } from '../../domain';
-import { ChangePasswordDto, ConfirmSignUpDto, ForgotPasswordDto, LoginDto, RefreshTokenDto, ResetPasswordDto, SignUpDto } from '../dtos';
+import { ChangePasswordDto, ConfirmSignUpDto, ForgotPasswordDto, LoginDto, RefreshTokenDto, ResetPasswordDto, SignUpDto, VerifyMfaDto } from '../dtos';
 
 @injectable()
 export class AuthController {
     constructor(
         @inject(TYPES.AuthService) private authService: IAuthService
-    ) {}
+    ) { }
 
     // --- Existing Methods (login, refresh, getUserInfo, signUp, confirmSignUp, logout) ---
     // ... (Keep implementations as before) ...
@@ -39,25 +39,25 @@ export class AuthController {
             res.status(200).json(userInfo);
         } catch (error) { next(error); }
     };
-     signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const signUpDto = req.body as SignUpDto;
             const result = await this.authService.signUp(signUpDto);
             res.status(201).json(result);
         } catch (error) { next(error); }
     };
-     confirmSignUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    confirmSignUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const confirmDto = req.body as ConfirmSignUpDto;
             await this.authService.confirmSignUp(confirmDto.username, confirmDto.confirmationCode);
             res.status(200).json({ message: 'Account confirmed successfully.' });
         } catch (error) { next(error); }
     };
-     logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const authHeader = req.headers.authorization;
             if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                 throw new AuthenticationError('Authorization header missing or invalid');
+                throw new AuthenticationError('Authorization header missing or invalid');
             }
             const accessToken = authHeader.split(' ')[1];
             await this.authService.logout(accessToken);
@@ -65,7 +65,26 @@ export class AuthController {
         } catch (error) { next(error); }
     };
 
-    // --- New Password Management Handlers ---
+    /**
+      * Handles MFA verification requests.
+      * POST /api/auth/verify-mfa
+      */
+    verifyMfa = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const verifyMfaDto = req.body as VerifyMfaDto;
+            const tokens = await this.authService.verifyMfa(
+                verifyMfaDto.username,
+                verifyMfaDto.session,
+                verifyMfaDto.challengeName, // Already validated as ChallengeNameType by Zod
+                verifyMfaDto.code
+            );
+            // MFA verification successful, return tokens
+            res.status(200).json(tokens);
+        } catch (error) {
+            // Handle specific errors like invalid code, session expiry, etc.
+            next(error);
+        }
+    };
 
     /**
      * Handles forgot password requests.
@@ -87,7 +106,7 @@ export class AuthController {
             // Log the actual error internally, but return a generic message
             // However, our adapter/service might throw specific errors we want to handle (like RateLimitError)
             if ((error as any)?.name === 'RateLimitError') {
-                 return next(error); // Pass specific errors like rate limiting
+                return next(error); // Pass specific errors like rate limiting
             }
             // Log the real error for debugging
             console.error('Forgot password internal error:', error); // Replace with actual logger if possible
@@ -125,7 +144,7 @@ export class AuthController {
             // Auth guard should verify token and potentially attach it or user info
             const authHeader = req.headers.authorization;
             if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                 throw new AuthenticationError('Authorization header missing or invalid');
+                throw new AuthenticationError('Authorization header missing or invalid');
             }
             const accessToken = authHeader.split(' ')[1]; // Extract token
 

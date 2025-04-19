@@ -1,4 +1,4 @@
-import { CodeDeliveryDetailsType } from "@aws-sdk/client-cognito-identity-provider";
+import { ChallengeNameType, CodeDeliveryDetailsType } from "@aws-sdk/client-cognito-identity-provider";
 import { AuthTokens, SignUpDetails, SignUpResult } from "./IAuthAdapter"; // Import related types
 
 /**
@@ -15,6 +15,18 @@ export interface IAuthService {
      * @throws {AuthenticationError | ValidationError | BaseError} For login failures.
      */
     login(username: string, password: string): Promise<AuthTokens>;
+
+      /**
+     * Verifies the MFA code/response provided by the user during a challenge.
+     * @param username - The user's identifier.
+     * @param session - The session string from the MFA challenge.
+     * @param challengeName - The specific MFA challenge being verified (e.g., SMS_MFA, SOFTWARE_TOKEN_MFA).
+     * @param code - The MFA code (TOTP, SMS) or potentially a serialized Passkey assertion.
+     * @returns A promise resolving to authentication tokens upon successful verification.
+     * @throws {AuthenticationError | ValidationError | BaseError} For verification failures.
+     */
+      verifyMfa(username: string, session: string, challengeName: ChallengeNameType, code: string): Promise<AuthTokens>;
+
 
     /**
      * Handles token refresh request.

@@ -1,4 +1,4 @@
-import { CodeDeliveryDetailsType } from "@aws-sdk/client-cognito-identity-provider"; // Import necessary type
+import { ChallengeNameType, CodeDeliveryDetailsType } from "@aws-sdk/client-cognito-identity-provider"; // Import necessary type
 
 /**
  * Defines the contract for interacting with an external Identity Provider (IdP)
@@ -10,10 +10,22 @@ export interface IAuthAdapter {
      * @param username - The user's identifier (e.g., email, username).
      * @param password - The user's password.
      * @returns A promise resolving to authentication tokens (e.g., access, refresh, id token).
-     * @throws {AuthenticationError | UserNotConfirmedError | PasswordResetRequiredError} If authentication fails or requires action.
+     * @throws {AuthenticationError | UserNotConfirmedError | PasswordResetRequiredError | MfaRequiredError} If authentication fails or requires action.
      * @throws {BaseError} For other operational errors.
      */
     authenticateUser(username: string, password: string): Promise<AuthTokens>;
+
+    /**
+     * Responds to an authentication challenge (e.g., MFA, new password required).
+     * @param username - The user's identifier.
+     * @param session - The session string received from the initial authentication attempt that resulted in a challenge.
+     * @param challengeName - The name of the challenge being responded to.
+     * @param responses - A map of challenge responses required by Cognito (e.g., { SMS_MFA_CODE: '123456' }).
+     * @returns A promise resolving to authentication tokens upon successful challenge completion.
+     * @throws {AuthenticationError} If the challenge response is invalid or the session expires.
+     * @throws {BaseError} For other operational errors.
+     */
+    respondToAuthChallenge(username: string, session: string, challengeName: ChallengeNameType, responses: Record<string, string>): Promise<AuthTokens>;
 
     /**
      * Refreshes authentication tokens using a refresh token.
@@ -112,10 +124,7 @@ export interface IAuthAdapter {
      */
     changePassword(accessToken: string, previousPassword: string, proposedPassword: string): Promise<void>;
 
-    // --- Admin Methods (Keep existing ones) ---
-    adminInitiateForgotPassword(username: string): Promise<void>;
-    adminConfirmForgotPassword(username: string, confirmationCode: string, newPassword: string): Promise<void>;
-    // TODO: Add adminAddUserToGroup for RBAC step later
+  // TODO: Add adminAddUserToGroup for RBAC step later
     // adminAddUserToGroup(username: string, groupName: string): Promise<void>;
 
     // Add other methods as needed

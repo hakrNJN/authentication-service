@@ -6,14 +6,13 @@ import { validationMiddleware } from '../middlewares/validation.middleware';
 import { ILogger } from '../../application/interfaces/ILogger';
 import { TYPES } from '../../shared/constants/types';
 import {
-    ChangePasswordSchema // New schemas
-    ,
-
+    ChangePasswordSchema,
     ConfirmSignUpSchema,
     ForgotPasswordSchema,
     LoginSchema, RefreshTokenSchema,
     ResetPasswordSchema,
-    SignUpSchema
+    SignUpSchema,
+    VerifyMfaSchema // New schema import
 } from '../dtos';
 // TODO: Import authentication guard middleware when created
 // import { authGuardMiddleware } from '../middlewares';
@@ -31,8 +30,11 @@ const router = Router();
 router.post('/signup', validationMiddleware(SignUpSchema, logger), authController.signUp);
 router.post('/confirm-signup', validationMiddleware(ConfirmSignUpSchema, logger), authController.confirmSignUp);
 
-// Login & Refresh
+// Login & MFA Verification
 router.post('/login', validationMiddleware(LoginSchema, logger), authController.login);
+router.post('/verify-mfa', validationMiddleware(VerifyMfaSchema, logger), authController.verifyMfa); // New route
+
+// Refresh Token
 router.post('/refresh', validationMiddleware(RefreshTokenSchema, logger), authController.refresh);
 
 // Password Management

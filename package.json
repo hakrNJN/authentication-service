@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ts-node--watch src/main.ts",
+    "test": "jest",
     "start": "node --env-file=.env dist/main.js",
     "dev": "ts-node-dev --watch --respawn --transpile-only --env-file=.env.example src/main.ts",
     "build": "tsc"

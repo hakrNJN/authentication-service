@@ -6,8 +6,8 @@ import { ILogger } from '../interfaces/ILogger';
 // import { ITokenService } from '../interfaces/ITokenService'; // Uncomment if using custom tokens
 import { TYPES } from '../../shared/constants/types';
 // Import specific domain errors via barrel file
-import { CodeDeliveryDetailsType, LimitExceededException } from '@aws-sdk/client-cognito-identity-provider';
-import { AuthenticationError, ValidationError } from '../../domain';
+import { ChallengeNameType, CodeDeliveryDetailsType, LimitExceededException } from '@aws-sdk/client-cognito-identity-provider';
+import { AuthenticationError, MfaRequiredError, ValidationError } from '../../domain';
 import { BaseError, NotFoundError } from '../../shared/errors/BaseError';
 
 @injectable()
@@ -34,15 +34,79 @@ export class AuthService implements IAuthService {
             this.logger.info(`Login successful for user: ${username}`);
             return tokens;
         } catch (error: any) {
-            this.logger.error(`Login failed for user ${username}: ${error.message}`, error);
+            // Log differently based on whether MFA is required vs other errors
+            if (error instanceof MfaRequiredError) {
+                this.logger.warn(`MFA required for user ${username}: ${error.challengeName}`);
+                throw error; // Re-throw MfaRequiredError to be handled by middleware/controller
+            } else {
+                this.logger.error(`Login failed for user ${username}: ${error.message}`, error);
+                // Re-throw known operational errors directly
+                if (error instanceof BaseError && error.isOperational) {
+                    throw error;
+                }
+                // Wrap unexpected errors
+                throw new AuthenticationError(`Login failed: ${error.message || 'An unexpected error occurred'}`);
+            }
+        }
+    }
+
+    async verifyMfa(username: string, session: string, challengeName: ChallengeNameType, code: string): Promise<AuthTokens> {
+        this.logger.info(`Verifying MFA challenge ${challengeName} for user: ${username}`);
+        if (!username || !session || !challengeName || !code) {
+            throw new ValidationError('Username, session, challenge name, and code are required for MFA verification.');
+        }
+
+        // Prepare the challenge responses based on the challenge type
+        let responses: Record<string, string> = {};
+        switch (challengeName) {
+            case ChallengeNameType.SMS_MFA:
+                responses = { SMS_MFA_CODE: code, USERNAME: username }; // Username might be needed by Cognito here
+                break;
+            case ChallengeNameType.SOFTWARE_TOKEN_MFA:
+                responses = { SOFTWARE_TOKEN_MFA_CODE: code, USERNAME: username }; // Username might be needed
+                break;
+            case ChallengeNameType.DEVICE_PASSWORD_VERIFIER:
+                // For FIDO2/WebAuthn, the 'code' would be a JSON string containing the authenticator assertion response.
+                // We need to parse it and map it to the expected Cognito parameters.
+                // This requires understanding the specific structure Cognito expects for DEVICE_PASSWORD_VERIFIER.
+                // Assuming 'code' is the JSON string for now.
+                try {
+                    const assertionResponse = JSON.parse(code);
+                    responses = {
+                        USERNAME: username,
+                        DEVICE_KEY: assertionResponse.id, // Or appropriate key from assertion
+                        CHALLENGE_SIGNATURE: assertionResponse.response.signature,
+                        TIMESTAMP: new Date().toISOString(), // Cognito might require a timestamp
+                        // Add other necessary fields based on Cognito's DEVICE_PASSWORD_VERIFIER requirements
+                        // e.g., authenticatorData, clientDataJSON might be needed depending on flow
+                    };
+                    this.logger.info('Prepared DEVICE_PASSWORD_VERIFIER responses (structure may need adjustment based on Cognito specifics).');
+                } catch (parseError) {
+                    this.logger.error(`Failed to parse Passkey/FIDO2 assertion response: ${parseError}`);
+                    throw new ValidationError('Invalid Passkey/FIDO2 response format.');
+                }
+                break;
+            // Add cases for other challenges like MFA_SETUP if needed
+            default:
+                this.logger.error(`Unsupported challenge type for verification: ${challengeName}`);
+                throw new ValidationError(`Unsupported MFA challenge type: ${challengeName}`);
+        }
+
+        try {
+            const tokens = await this.authAdapter.respondToAuthChallenge(username, session, challengeName, responses);
+            this.logger.info(`MFA verification successful for user: ${username}`);
+            return tokens;
+        } catch (error: any) {
+            this.logger.error(`MFA verification failed for user ${username}: ${error.message}`, error);
             // Re-throw known operational errors directly
             if (error instanceof BaseError && error.isOperational) {
                 throw error;
             }
             // Wrap unexpected errors
-            throw new AuthenticationError(`Login failed: ${error.message || 'An unexpected error occurred'}`);
+            throw new AuthenticationError(`MFA verification failed: ${error.message || 'An unexpected error occurred'}`);
         }
     }
+
 
     async refresh(refreshToken: string): Promise<AuthTokens> {
         this.logger.info('Token refresh requested.');
