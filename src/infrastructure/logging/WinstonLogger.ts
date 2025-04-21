@@ -11,7 +11,7 @@ export class WinstonLogger implements ILogger {
     private readonly logger: Logger;
 
     constructor(@inject(TYPES.ConfigService) private configService: IConfigService) {
-        const logLevel = this.configService.get<string>('LOG_LEVEL', 'info');
+        const logLevel = this.configService.get<string>('LOG_LEVEL', 'debug');
         const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
 
         // Use formats defined in logger.config.ts

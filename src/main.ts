@@ -54,21 +54,32 @@ async function bootstrap() {
                     process.exit(0);
                 });
 
+                const shutdownTimeout = configService.getNumber('SHUTDOWN_TIMEOUT', 10000);
+
                 setTimeout(() => {
                     logger?.warn('Graceful shutdown timed out, forcing exit.');
                     process.exit(1);
-                }, 10000);
+                }, shutdownTimeout);
             });
         });
 
         // --- Global Error Handlers ---
         process.on('unhandledRejection', (reason: Error | any, promise: Promise<any>) => {
-            logger?.error('Unhandled Rejection:', reason instanceof Error ? reason : new Error(String(reason)), { promiseContext: promise });
+            const error = reason instanceof Error ? reason : new Error(String(reason));
+            logger?.error('Unhandled Rejection:', error, {
+                promiseContext: promise,
+                code: 'UNHANDLED_REJECTION',
+                message: 'An unhandled rejection occurred. The application may be in an unstable state.'
+            });
             // Decide on exiting strategy
         });
 
         process.on('uncaughtException', (err: Error, origin: string) => {
-            logger?.error(`Uncaught Exception: ${err.message}`, err, { origin: origin });
+            logger?.error(`Uncaught Exception: ${err.message}`, err, {
+                origin: origin,
+                code: 'UNCAUGHT_EXCEPTION',
+                message: 'An uncaught exception occurred. The application is exiting.'
+            });
             logger?.info('Exiting due to uncaught exception...');
              // Attempt a quick log flush before exiting
             setTimeout(() => process.exit(1), 500);
@@ -80,11 +91,13 @@ async function bootstrap() {
         // Use console.error as logger might not be initialized if error happened early
         console.error(errorMsg, error.stack);
         // Ensure logger attempts to log if available
-        logger?.error(errorMsg, error);
+        logger?.error(errorMsg, error, {
+            code: 'BOOTSTRAP_ERROR',
+            message: 'Application failed to start due to a configuration or dependency error. Check the logs for details.'
+        });
         process.exit(1);
     }
 }
 
 // --- Start the Application ---
 bootstrap(); // No catch here as it's handled inside bootstrap
-

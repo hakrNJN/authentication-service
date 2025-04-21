@@ -12,7 +12,7 @@ export const mockAuthAdapter: jest.Mocked<IAuthAdapter> = {
     confirmForgotPassword: jest.fn(),
     changePassword: jest.fn(),
     adminInitiateForgotPassword: jest.fn(),
-    adminConfirmForgotPassword: jest.fn(),
+    adminSetPassword: jest.fn(),
 };
 
 // Function to reset the mock before each test

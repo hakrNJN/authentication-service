@@ -52,7 +52,7 @@ export interface IAuthAdapter {
      * @throws {AuthenticationError} If the code is invalid or expired.
      * @throws {ValidationError} If the new password doesn't meet policy requirements.
      */
-    adminConfirmForgotPassword(username: string, confirmationCode: string, newPassword: string): Promise<void>;
+    adminSetPassword(username: string, newPassword: string): Promise<void>;
 
     /**
      * Retrieves user information based on a valid access token.
