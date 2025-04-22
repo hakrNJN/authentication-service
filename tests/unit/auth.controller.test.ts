@@ -4,6 +4,7 @@ import { IAuthService } from '../../src/application/interfaces/IAuthService';
 import { container } from '../../src/container';
 import { AuthenticationError, MfaRequiredError, ValidationError } from '../../src/domain';
 import { TYPES } from '../../src/shared/constants/types';
+import { mockLogger } from '../mocks/mockLogger';
 
 const mockRequest = (body: any = {}, headers: any = {}): any => ({ body, headers });
 const mockResponse = (): any => {
@@ -40,7 +41,7 @@ describe('AuthController', () => {
     }
     container.registerInstance<IAuthService>(TYPES.AuthService, mockAuthService);
 
-    controller = container.resolve(AuthController);
+    controller = new AuthController(mockAuthService, mockLogger);
   });
 
   describe('login', () => {

@@ -120,7 +120,6 @@ export class CognitoAuthAdapter implements IAuthAdapter {
     }
 
     async authenticateUser(username: string, password: string): Promise<AuthTokens> {
-        console.log(`Attempting authentication for user: ${username}`);
         this.logger.info(`Attempting authentication for user: ${username}`);
         const params: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,

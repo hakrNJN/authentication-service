@@ -14,6 +14,8 @@ import { mockAuthService } from '../mocks/mockAuthService';
 import { mockConfigService } from '../mocks/mockConfigService';
 import { mockLogger } from '../mocks/mockLogger';
 
+jest.mock('../mocks/mockAuthService');
+
 // Setup test application with error handling
 const app = express();
 app.use(express.json());
@@ -30,7 +32,7 @@ beforeEach(() => {
     container.registerInstance<IAuthService>(TYPES.AuthService, mockAuthService);
 
     // Create controller instance
-    const authController = new AuthController(mockAuthService);
+    const authController = new AuthController(mockAuthService, mockLogger);
 
     // Set up routes manually instead of importing auth.routes
     const router = express.Router();

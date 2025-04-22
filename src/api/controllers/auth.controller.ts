@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { inject, injectable } from 'tsyringe';
 import { IAuthService } from '../../application/interfaces/IAuthService';
+import { ILogger } from '../../application/interfaces/ILogger';
 import { TYPES } from '../../shared/constants/types';
 // Import DTO types
 import { AuthenticationError } from '../../domain';
@@ -9,7 +10,8 @@ import { ChangePasswordDto, ConfirmSignUpDto, ForgotPasswordDto, LoginDto, Refre
 @injectable()
 export class AuthController {
     constructor(
-        @inject(TYPES.AuthService) private authService: IAuthService
+        @inject(TYPES.AuthService) private authService: IAuthService,
+        @inject(TYPES.Logger) private logger: ILogger
     ) { }
 
     // --- Existing Methods (login, refresh, getUserInfo, signUp, confirmSignUp, logout) ---
@@ -109,7 +111,7 @@ export class AuthController {
                 return next(error); // Pass specific errors like rate limiting
             }
             // Log the real error for debugging
-            console.error('Forgot password internal error:', error); // Replace with actual logger if possible
+            this.logger.error('Forgot password internal error:', error);
             // Return generic success to prevent user enumeration
             res.status(200).json({ message: 'If a matching account was found, a password reset code has been sent.' });
             // Or pass a generic internal error: next(new BaseError('ForgotPasswordFailed', 500, 'Failed to process forgot password request'));
