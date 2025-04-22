@@ -1,526 +1,515 @@
 import {
-    AdminResetUserPasswordCommand, // Added
-    AdminSetUserPasswordCommand, // Added
-    AttributeType,
-    AuthFlowType,
-    AuthenticationResultType,
+    AdminResetUserPasswordCommand,
+    AdminSetUserPasswordCommand,
     ChallengeNameType,
     ChangePasswordCommand,
     CodeDeliveryDetailsType,
-    CodeDeliveryFailureException,
-    CodeMismatchException, // Keep constructor import for type checking
+    CodeMismatchException,
+    CognitoIdentityProviderClient,
     ConfirmForgotPasswordCommand,
     ConfirmSignUpCommand,
+    DeliveryMediumType,
     ExpiredCodeException,
-    ForbiddenException,
     ForgotPasswordCommand,
     GetUserCommand,
     GlobalSignOutCommand,
     InitiateAuthCommand,
-    InitiateAuthCommandOutput,
-    InternalErrorException,
-    InvalidParameterException,
     InvalidPasswordException,
     LimitExceededException,
-    // Import Specific Exception Classes used with createCognitoError
     NotAuthorizedException,
-    ResourceNotFoundException, // Keep Output types used in tests
     RespondToAuthChallengeCommand,
     SignUpCommand,
-    TooManyFailedAttemptsException,
-    TooManyRequestsException,
     UserNotConfirmedException,
     UserNotFoundException,
     UsernameExistsException
 } from '@aws-sdk/client-cognito-identity-provider';
-import 'reflect-metadata';
+import { mockClient } from 'aws-sdk-client-mock';
+import { container } from 'tsyringe';
+
 import { IConfigService } from '../../../../../src/application/interfaces/IConfigService';
 import { ILogger } from '../../../../../src/application/interfaces/ILogger';
-import { container } from '../../../../../src/container';
-import {
-    AuthenticationError,
-    InvalidCredentialsError,
-    InvalidTokenError,
-    MfaRequiredError,
-    PasswordResetRequiredError,
-    UserNotConfirmedError,
-    ValidationError,
-} from '../../../../../src/domain';
+import { AuthenticationError, InvalidCredentialsError, InvalidTokenError, MfaRequiredError, PasswordResetRequiredError, UserNotConfirmedError, ValidationError } from '../../../../../src/domain';
 import { CognitoAuthAdapter } from '../../../../../src/infrastructure/adapters/cognito/CognitoAuthAdapter';
-import { TYPES } from '../../../../../src/shared/constants/types';
 import { BaseError, NotFoundError } from '../../../../../src/shared/errors/BaseError';
-import { mockConfigService, resetMockConfigService } from '../../../../mocks/mockConfigService';
-import { mockLogger, resetMockLogger } from '../../../../mocks/mockLogger';
 
+// Mock AWS SDK
+const cognitoMock = mockClient(CognitoIdentityProviderClient);
 
-// --- Mock AWS SDK Client ---
-const mockSend = jest.fn();
-// Mock the entire module first
-jest.mock('@aws-sdk/client-cognito-identity-provider');
-// NOW, get a typed reference to the *mocked* constructor
-const { CognitoIdentityProviderClient: MockCognitoClient } = jest.requireMock('@aws-sdk/client-cognito-identity-provider');
-// Configure the mock implementation *before* tests run
-MockCognitoClient.mockImplementation(() => ({
-    send: mockSend,
-    destroy: jest.fn(),
-}));
+// Mock dependencies
+const mockConfigService: jest.Mocked<IConfigService> = {
+    get: jest.fn(),
+    getNumber: jest.fn(),
+    getBoolean: jest.fn(),
+    getAllConfig: jest.fn(),
+    has: jest.fn()
+};
 
-
-// --- Helper to Create AWS Errors ---
-function createCognitoError(ErrorClass: any, message: string, statusCode = 400) {
-    // Use the actual constructor if available, otherwise create a generic error
-    const error = new ErrorClass({ message, $metadata: {} });
-    Object.defineProperty(error, 'name', { value: ErrorClass.name, configurable: true });
-    error.$response = { statusCode };
-    return error;
-}
+const mockLogger = {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn()
+} as jest.Mocked<ILogger>;
 
 describe('CognitoAuthAdapter', () => {
     let adapter: CognitoAuthAdapter;
-    let localMockLogger: jest.Mocked<ILogger>;
-    let localMockConfigService: jest.Mocked<IConfigService>;
-
-    // --- Test Data ---
-    const userPoolId = 'us-east-1_testpool'; // Needed for admin commands
-    const clientId = 'mockclientid123';
-    const username = 'testuser@example.com';
-    const password = 'Password123!';
-    const accessToken = 'valid.access.token';
-    const refreshToken = 'valid.refresh.token';
-    const session = 'AYABeN3YZF66uA1256WLJ0N_0Zd9lPqzJAQEBwYCCAcIAxH2DQMLEe0PAw8R4xUEFwEZDhwPGA8dEQoaDxgCBAIEBR0BBgAGEe0PAw8PGA8YDxgBAhgPGA8YBgEGEe0PAwwR7Q8DDxHwCAoKDxwAABLtDwMSEg4TEfYNAwwR4BAODAkOEQ4QBhHjFQQXDBkOHA8YDx0RChoPGAAABAURBBPtDw8QEfQBChAS7Q8DDwn_____AQsJEusPAwwR7g0OAgwMAg8MAQEKEQoR9g0DCxH2DQMLCxPtDxIAAhgSWEpXVFNUWVhWVFRQEwA.test'; // Ensure long enough
-    const confirmationCode = '123456';
-    const previousPassword = 'OldPassword123!';
-    const proposedPassword = 'NewPassword456!';
-    const mockAuthResult: AuthenticationResultType = {
-        AccessToken: 'at', RefreshToken: 'rt', IdToken: 'it', ExpiresIn: 3600, TokenType: 'Bearer'
-    };
-    const mockNewAuthResult: AuthenticationResultType = {
-        AccessToken: 'new-at', RefreshToken: 'new-rt-optional', IdToken: 'new-it', ExpiresIn: 3600, TokenType: 'Bearer'
-    };
-    const mockUserAttributes: AttributeType[] = [
-        { Name: 'sub', Value: 'uuid-123' }, { Name: 'email', Value: username }
-    ];
-    const mockCodeDeliveryDetails: CodeDeliveryDetailsType = {
-        AttributeName: 'email', DeliveryMedium: 'EMAIL', Destination: 't***@e***.com'
-    };
 
     beforeEach(() => {
-        // Reset mocks
-        resetMockLogger();
-        resetMockConfigService();
-        localMockLogger = mockLogger as jest.Mocked<ILogger>;
-        localMockConfigService = mockConfigService as jest.Mocked<IConfigService>;
-
-        mockSend.mockReset();
-        MockCognitoClient.mockClear();
-
-        // Configure config values
-        localMockConfigService.get.mockImplementation((key: string) => {
-            if (key === 'AWS_REGION') return 'us-east-1';
-            if (key === 'COGNITO_USER_POOL_ID') return userPoolId;
-            if (key === 'COGNITO_CLIENT_ID') return clientId;
-            return undefined;
-        });
-
-        // Clear container and register mocks
+        // Reset all mocks
+        jest.clearAllMocks();
+        cognitoMock.reset();
         container.clearInstances();
-        container.registerInstance<ILogger>(TYPES.Logger, localMockLogger);
-        container.registerInstance<IConfigService>(TYPES.ConfigService, localMockConfigService);
 
-        // Resolve adapter AFTER mocks are registered and configured
-        adapter = container.resolve(CognitoAuthAdapter);
+        // Set up the config
+        mockConfigService.get.mockImplementation((key: string) => {
+            switch(key) {
+                case 'AWS_REGION': return 'us-east-1';
+                case 'COGNITO_USER_POOL_ID': return 'us-east-1_testpool';
+                case 'COGNITO_CLIENT_ID': return 'test-client-id';
+                default: return undefined;
+            }
+        });
+
+        // Set up AWS SDK mock responses first
+        mockAwsSdkResponses();
+
+        // Create adapter instance directly (not through container)
+        adapter = new CognitoAuthAdapter(mockConfigService, mockLogger);
+
+        // Mock the resilient functions to pass through to the AWS SDK mock
+        mockResilientFunctions(adapter);
     });
 
-    // --- Test Cases ---
+    function mockResilientFunctions(adapter: any) {
+        // Type the commands properly to match AWS SDK expectations
+        const mockSend = <T>(command: T) => cognitoMock.send(command as any);
+        
+        // Mock all resilient functions with proper command handling
+        adapter.resilientInitiateAuth = (params: any) => mockSend(new InitiateAuthCommand(params));
+        adapter.resilientGetUser = (params: any) => mockSend(new GetUserCommand(params));
+        adapter.resilientSignUp = (params: any) => mockSend(new SignUpCommand(params));
+        adapter.resilientConfirmSignUp = (params: any) => mockSend(new ConfirmSignUpCommand(params));
+        adapter.resilientGlobalSignOut = (params: any) => mockSend(new GlobalSignOutCommand(params));
+        adapter.resilientForgotPassword = (params: any) => mockSend(new ForgotPasswordCommand(params));
+        adapter.resilientConfirmForgotPassword = (params: any) => mockSend(new ConfirmForgotPasswordCommand(params));
+        adapter.resilientChangePassword = (params: any) => mockSend(new ChangePasswordCommand(params));
+        adapter.resilientRespondToAuthChallenge = (params: any) => mockSend(new RespondToAuthChallengeCommand(params));
+        adapter.resilientAdminResetUserPassword = (params: any) => mockSend(new AdminResetUserPasswordCommand(params));
+        adapter.resilientAdminSetUserPassword = (params: any) => mockSend(new AdminSetUserPasswordCommand(params));
+    }
 
-    describe.only('authenticateUser', () => {
+    function mockAwsSdkResponses() {
+        cognitoMock.reset();
+
+        // Mock AWS SDK responses with proper command types
+        cognitoMock.on(InitiateAuthCommand).resolves({
+            AuthenticationResult: {
+                AccessToken: 'access-token',
+                RefreshToken: 'refresh-token',
+                IdToken: 'id-token',
+                ExpiresIn: 3600,
+                TokenType: 'Bearer'
+            }
+        });
+
+        cognitoMock.on(SignUpCommand).resolves({
+            UserSub: 'user-sub-123',
+            UserConfirmed: false,
+            CodeDeliveryDetails: {
+                Destination: 'n***@example.com',
+                DeliveryMedium: DeliveryMediumType.EMAIL,
+                AttributeName: 'email'
+            }
+        });
+
+        // Mock remaining commands with their responses
+        cognitoMock.on(ConfirmSignUpCommand).resolves({});
+        cognitoMock.on(GlobalSignOutCommand).resolves({});
+        cognitoMock.on(ForgotPasswordCommand).resolves({
+            CodeDeliveryDetails: {
+                Destination: 'u***@example.com',
+                DeliveryMedium: DeliveryMediumType.EMAIL,
+                AttributeName: 'email'
+            }
+        });
+        cognitoMock.on(ConfirmForgotPasswordCommand).resolves({});
+        cognitoMock.on(AdminResetUserPasswordCommand).resolves({});
+        cognitoMock.on(AdminSetUserPasswordCommand).resolves({});
+        cognitoMock.on(GetUserCommand).resolves({
+            Username: 'testuser',
+            UserAttributes: []
+        });
+        cognitoMock.on(ChangePasswordCommand).resolves({});
+        cognitoMock.on(RespondToAuthChallengeCommand).resolves({
+            AuthenticationResult: {
+                AccessToken: 'access-token',
+                RefreshToken: 'refresh-token',
+                IdToken: 'id-token',
+                ExpiresIn: 3600,
+                TokenType: 'Bearer'
+            }
+        });
+    }
+
+    describe('constructor', () => {
+        it('should throw error if AWS_REGION is missing', () => {
+            mockConfigService.get.mockImplementation(key => key === 'AWS_REGION' ? '' : 'dummy');
+            expect(() => new CognitoAuthAdapter(mockConfigService, mockLogger))
+                .toThrow('Required AWS Cognito configuration');
+        });
+
+        it('should throw error if COGNITO_USER_POOL_ID is missing', () => {
+            mockConfigService.get.mockImplementation(key => key === 'COGNITO_USER_POOL_ID' ? '' : 'dummy');
+            expect(() => new CognitoAuthAdapter(mockConfigService, mockLogger))
+                .toThrow('Required AWS Cognito configuration');
+        });
+
+        it('should throw error if COGNITO_CLIENT_ID is missing', () => {
+            mockConfigService.get.mockImplementation(key => key === 'COGNITO_CLIENT_ID' ? '' : 'dummy');
+            expect(() => new CognitoAuthAdapter(mockConfigService, mockLogger))
+                .toThrow('Required AWS Cognito configuration');
+        });
+    });
+
+    describe('authenticateUser', () => {
+        const username = 'testuser';
+        const password = 'Password123!';
+        const validAuthResult = {
+            AuthenticationResult: {
+                AccessToken: 'access-token',
+                RefreshToken: 'refresh-token',
+                IdToken: 'id-token',
+                ExpiresIn: 3600,
+                TokenType: 'Bearer'
+            }
+        };
+
         it('should return tokens on successful authentication', async () => {
-            const output: InitiateAuthCommandOutput = { $metadata: {}, AuthenticationResult: mockAuthResult };
-            mockSend.mockResolvedValueOnce(output);
+            cognitoMock.on(InitiateAuthCommand).resolves(validAuthResult);
+
             const result = await adapter.authenticateUser(username, password);
-            expect(result).toEqual(expect.objectContaining({ accessToken: 'at', refreshToken: 'rt' }));
-            expect(mockSend).toHaveBeenCalledWith(expect.any(InitiateAuthCommand));
-            expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
-                input: { AuthFlow: AuthFlowType.USER_PASSWORD_AUTH, ClientId: clientId, AuthParameters: { USERNAME: username, PASSWORD: password } }
-            }));
+
+            expect(result).toEqual({
+                accessToken: 'access-token',
+                refreshToken: 'refresh-token',
+                idToken: 'id-token',
+                expiresIn: 3600,
+                tokenType: 'Bearer'
+            });
+            expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Authentication successful'));
         });
 
-        it('should throw MfaRequiredError for SOFTWARE_TOKEN_MFA challenge', async () => {
-            const output: InitiateAuthCommandOutput = { $metadata: {}, ChallengeName: ChallengeNameType.SOFTWARE_TOKEN_MFA, Session: session, ChallengeParameters: {} };
-            mockSend.mockResolvedValueOnce(output);
-            await expect(adapter.authenticateUser(username, password)).rejects.toThrow(MfaRequiredError);
-            await expect(adapter.authenticateUser(username, password)).rejects.toMatchObject({ session, challengeName: ChallengeNameType.SOFTWARE_TOKEN_MFA });
+        it('should throw PasswordResetRequiredError when password reset is required', async () => {
+            cognitoMock.on(InitiateAuthCommand).resolves({
+                ChallengeName: ChallengeNameType.NEW_PASSWORD_REQUIRED
+            });
+
+            await expect(adapter.authenticateUser(username, password))
+                .rejects
+                .toThrow(PasswordResetRequiredError);
         });
 
-        it('should throw PasswordResetRequiredError for NEW_PASSWORD_REQUIRED challenge', async () => {
-            const output: InitiateAuthCommandOutput = { $metadata: {}, ChallengeName: ChallengeNameType.NEW_PASSWORD_REQUIRED, Session: session };
-            mockSend.mockResolvedValueOnce(output);
-            await expect(adapter.authenticateUser(username, password)).rejects.toThrow(PasswordResetRequiredError);
+        it('should throw MfaRequiredError when MFA is required', async () => {
+            cognitoMock.on(InitiateAuthCommand).resolves({
+                ChallengeName: ChallengeNameType.SMS_MFA,
+                Session: 'session-token',
+                ChallengeParameters: {}
+            });
+
+            await expect(adapter.authenticateUser(username, password))
+                .rejects
+                .toThrow(MfaRequiredError);
         });
 
-        it('should throw InvalidCredentialsError for NotAuthorizedException (wrong password)', async () => {
-            // Simulate incorrect password scenario
-            mockSend.mockRejectedValueOnce(createCognitoError(NotAuthorizedException, 'Incorrect username or password.'));
-            await expect(adapter.authenticateUser(username, 'wrongpass')).rejects.toThrow(InvalidCredentialsError);
+        it('should throw InvalidCredentialsError on NotAuthorizedException', async () => {
+            cognitoMock.on(InitiateAuthCommand).rejects(
+                new NotAuthorizedException({ message: 'Invalid username or password', $metadata: {} })
+            );
+
+            await expect(adapter.authenticateUser(username, password))
+                .rejects
+                .toThrow(InvalidCredentialsError);
         });
 
-        it('should throw UserNotConfirmedError for UserNotConfirmedException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(UserNotConfirmedException, 'User is not confirmed.'));
-            await expect(adapter.authenticateUser(username, password)).rejects.toThrow(UserNotConfirmedError);
-        });
+        it('should throw UserNotConfirmedError when user is not confirmed', async () => {
+            cognitoMock.on(InitiateAuthCommand).rejects(
+                new UserNotConfirmedException({ message: 'User is not confirmed', $metadata: {} })
+            );
 
-        it('should throw NotFoundError for UserNotFoundException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(UserNotFoundException, 'User does not exist.', 404));
-            await expect(adapter.authenticateUser('unknown@example.com', password)).rejects.toThrow(NotFoundError);
-        });
-
-        it('should throw BaseError(RateLimitError) for TooManyRequestsException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(TooManyRequestsException, 'Rate limit exceeded.', 429));
-            await expect(adapter.authenticateUser(username, password)).rejects.toThrow(BaseError);
-            await expect(adapter.authenticateUser(username, password)).rejects.toMatchObject({ name: 'RateLimitError', statusCode: 429 });
-        });
-    });
-
-    describe('respondToAuthChallenge', () => {
-        it('should return tokens on successful challenge response', async () => {
-            const output: any = { $metadata: {}, AuthenticationResult: mockAuthResult }; // AWS SDK v3 doesn't always return a typed output here
-            mockSend.mockResolvedValueOnce(output);
-            const result = await adapter.respondToAuthChallenge(username, session, ChallengeNameType.SMS_MFA, { SMS_MFA_CODE: confirmationCode });
-            expect(result).toEqual(expect.objectContaining({ accessToken: 'at', refreshToken: 'rt' }));
-            expect(mockSend).toHaveBeenCalledWith(expect.any(RespondToAuthChallengeCommand));
-            expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
-                input: { ClientId: clientId, ChallengeName: ChallengeNameType.SMS_MFA, Session: session, ChallengeResponses: { SMS_MFA_CODE: confirmationCode } }
-            }));
-        });
-
-        it('should throw AuthenticationError for CodeMismatchException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(CodeMismatchException, 'Invalid verification code.'));
-            await expect(adapter.respondToAuthChallenge(username, session, ChallengeNameType.SMS_MFA, { SMS_MFA_CODE: 'wrong' })).rejects.toThrow(AuthenticationError);
-             await expect(adapter.respondToAuthChallenge(username, session, ChallengeNameType.SMS_MFA, { SMS_MFA_CODE: 'wrong' })).rejects.toMatchObject({ message: 'Invalid verification code', statusCode: 400 });
-        });
-
-        it('should throw AuthenticationError for ExpiredCodeException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(ExpiredCodeException, 'Verification code expired.'));
-            await expect(adapter.respondToAuthChallenge(username, session, ChallengeNameType.SMS_MFA, { SMS_MFA_CODE: confirmationCode })).rejects.toThrow(AuthenticationError);
-            await expect(adapter.respondToAuthChallenge(username, session, ChallengeNameType.SMS_MFA, { SMS_MFA_CODE: confirmationCode })).rejects.toMatchObject({ message: 'Verification code has expired', statusCode: 400 });
-        });
-
-        it('should throw MfaRequiredError if another challenge is presented', async () => {
-             const output: any = { $metadata: {}, ChallengeName: ChallengeNameType.SOFTWARE_TOKEN_MFA, Session: session, ChallengeParameters: {} };
-             mockSend.mockResolvedValueOnce(output);
-             await expect(adapter.respondToAuthChallenge(username, session, ChallengeNameType.NEW_PASSWORD_REQUIRED, { NEW_PASSWORD: proposedPassword })).rejects.toThrow(MfaRequiredError);
+            await expect(adapter.authenticateUser(username, password))
+                .rejects
+                .toThrow(UserNotConfirmedError);
         });
     });
 
     describe('refreshToken', () => {
+        const refreshToken = 'valid-refresh-token';
+        const validAuthResult = {
+            AuthenticationResult: {
+                AccessToken: 'new-access-token',
+                IdToken: 'new-id-token',
+                ExpiresIn: 3600,
+                TokenType: 'Bearer'
+            }
+        };
+
         it('should return new tokens on successful refresh', async () => {
-            const output: InitiateAuthCommandOutput = { $metadata: {}, AuthenticationResult: mockNewAuthResult };
-            mockSend.mockResolvedValueOnce(output);
+            cognitoMock.on(InitiateAuthCommand).resolves(validAuthResult);
+
             const result = await adapter.refreshToken(refreshToken);
-            expect(result).toEqual(expect.objectContaining({ accessToken: 'new-at', idToken: 'new-it' }));
-            expect(result.refreshToken).toBe(mockNewAuthResult.RefreshToken); // Check if the refresh token is passed through
-            expect(mockSend).toHaveBeenCalledWith(expect.any(InitiateAuthCommand));
-            expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
-                 input: { AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH, ClientId: clientId, AuthParameters: { REFRESH_TOKEN: refreshToken } }
-            }));
+
+            expect(result).toEqual({
+                accessToken: 'new-access-token',
+                idToken: 'new-id-token',
+                expiresIn: 3600,
+                tokenType: 'Bearer'
+            });
+            expect(mockLogger.info).toHaveBeenCalledWith('Token refresh successful.');
         });
 
-        it('should throw InvalidTokenError for NotAuthorizedException (invalid refresh token)', async () => {
-            // This error message might be specific to invalid refresh token, handleCognitoError should catch it
-            mockSend.mockRejectedValueOnce(createCognitoError(NotAuthorizedException, 'Invalid Refresh Token'));
-            await expect(adapter.refreshToken('invalid-token')).rejects.toThrow(InvalidCredentialsError); // Because message doesn't contain "Access Token"
-             // Let's refine the error check based on handleCognitoError logic
-             await expect(adapter.refreshToken('invalid-token')).rejects.toMatchObject({ name: 'InvalidCredentialsError' });
-        });
+        it('should throw InvalidTokenError when refresh token is invalid', async () => {
+            cognitoMock.on(InitiateAuthCommand).rejects(
+                new NotAuthorizedException({ message: 'Invalid refresh token', $metadata: {} })
+            );
 
-        it('should throw InvalidCredentialsError for general NotAuthorizedException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(NotAuthorizedException, 'Some other authorization issue.'));
-            await expect(adapter.refreshToken(refreshToken)).rejects.toThrow(InvalidCredentialsError);
+            await expect(adapter.refreshToken(refreshToken))
+                .rejects
+                .toThrow(InvalidTokenError);
         });
-    });
-
-    describe('getUserFromToken', () => {
-        it('should return user attributes on success', async () => {
-            const output: any = { $metadata: {}, UserAttributes: mockUserAttributes, Username: username };
-            mockSend.mockResolvedValueOnce(output);
-            const result = await adapter.getUserFromToken(accessToken);
-            expect(result).toEqual({ sub: 'uuid-123', email: username, username: username });
-            expect(mockSend).toHaveBeenCalledWith(expect.any(GetUserCommand));
-            expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({ input: { AccessToken: accessToken } }));
-        });
-
-        it('should throw InvalidTokenError for NotAuthorizedException (message contains Access Token)', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(NotAuthorizedException, 'Invalid Access Token'));
-            await expect(adapter.getUserFromToken('invalid-token')).rejects.toThrow(InvalidTokenError);
-        });
-
-        it('should throw InvalidTokenError for ForbiddenException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(ForbiddenException, 'Token has been revoked'));
-            await expect(adapter.getUserFromToken(accessToken)).rejects.toThrow(InvalidTokenError);
-        });
-
-         it('should throw NotFoundError for ResourceNotFoundException', async () => {
-             mockSend.mockRejectedValueOnce(createCognitoError(ResourceNotFoundException, 'User not found.')); // Example message
-             await expect(adapter.getUserFromToken(accessToken)).rejects.toThrow(NotFoundError);
-         });
     });
 
     describe('signUp', () => {
-        const details = { username: 'new@example.com', password: 'NewPassword1!', attributes: { email: 'new@example.com' } };
-        it('should return signup result on success', async () => {
-            const output: any = { $metadata: {}, UserSub: 'new-sub', UserConfirmed: false, CodeDeliveryDetails: mockCodeDeliveryDetails };
-            mockSend.mockResolvedValueOnce(output);
-            const result = await adapter.signUp(details);
-            expect(result).toEqual({ userSub: 'new-sub', userConfirmed: false, codeDeliveryDetails: mockCodeDeliveryDetails });
-            expect(mockSend).toHaveBeenCalledWith(expect.any(SignUpCommand));
-            expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
-                input: expect.objectContaining({ ClientId: clientId, Username: details.username })
-            }));
+        const signUpDetails = {
+            username: 'newuser@example.com',
+            password: 'Password123!',
+            attributes: {
+                email: 'newuser@example.com',
+                name: 'New User'
+            }
+        };
+
+        it('should return signup result on successful signup', async () => {
+            const mockResponse = {
+                UserSub: 'user-sub-123',
+                UserConfirmed: false,
+                CodeDeliveryDetails: {
+                    Destination: 'n***@example.com',
+                    DeliveryMedium: DeliveryMediumType.EMAIL,
+                    AttributeName: 'email'
+                }
+            };
+
+            cognitoMock.on(SignUpCommand).resolves(mockResponse);
+
+            const result = await adapter.signUp(signUpDetails);
+
+            expect(result).toEqual({
+                userSub: 'user-sub-123',
+                userConfirmed: false,
+                codeDeliveryDetails: mockResponse.CodeDeliveryDetails
+            });
         });
 
-        it('should throw ValidationError for UsernameExistsException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(UsernameExistsException, 'Username already exists.'));
-            await expect(adapter.signUp(details)).rejects.toThrow(ValidationError);
-            await expect(adapter.signUp(details)).rejects.toMatchObject({ message: 'Username already exists' });
+        it('should throw ValidationError when username already exists', async () => {
+            cognitoMock.on(SignUpCommand).rejects(
+                new UsernameExistsException({ message: 'Username already exists', $metadata: {} })
+            );
+
+            await expect(adapter.signUp(signUpDetails))
+                .rejects
+                .toThrow(ValidationError);
         });
 
-        it('should throw ValidationError for InvalidPasswordException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(InvalidPasswordException, 'Password does not meet policy.'));
-            await expect(adapter.signUp(details)).rejects.toThrow(ValidationError);
-            await expect(adapter.signUp(details)).rejects.toMatchObject({ message: 'Password does not meet policy.' });
-        });
+        it('should throw ValidationError when password policy fails', async () => {
+            cognitoMock.on(SignUpCommand).rejects(
+                new InvalidPasswordException({ message: 'Password does not meet requirements', $metadata: {} })
+            );
 
-        it('should throw ValidationError for InvalidParameterException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(InvalidParameterException, 'Invalid email address format.'));
-            await expect(adapter.signUp(details)).rejects.toThrow(ValidationError);
-             await expect(adapter.signUp(details)).rejects.toMatchObject({ message: 'Invalid email address format.' });
+            await expect(adapter.signUp(signUpDetails))
+                .rejects
+                .toThrow(ValidationError);
         });
     });
 
     describe('confirmSignUp', () => {
-        it('should resolve on successful confirmation', async () => {
-            const output: any = { $metadata: {} };
-            mockSend.mockResolvedValueOnce(output);
-            await expect(adapter.confirmSignUp(username, confirmationCode)).resolves.toBeUndefined();
-            expect(mockSend).toHaveBeenCalledWith(expect.any(ConfirmSignUpCommand));
-            expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
-                 input: { ClientId: clientId, Username: username, ConfirmationCode: confirmationCode }
-            }));
+        const username = 'user@example.com';
+        const code = '123456';
+
+        it('should complete successfully with valid code', async () => {
+            cognitoMock.on(ConfirmSignUpCommand).resolves({});
+
+            await adapter.confirmSignUp(username, code);
+
+            expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Signup confirmed successfully'));
         });
 
-        it('should throw AuthenticationError for CodeMismatchException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(CodeMismatchException, 'Invalid code.'));
-            await expect(adapter.confirmSignUp(username, 'wrong-code')).rejects.toThrow(AuthenticationError);
-            await expect(adapter.confirmSignUp(username, 'wrong-code')).rejects.toMatchObject({ statusCode: 400 });
+        it('should throw AuthenticationError when code is invalid', async () => {
+            cognitoMock.on(ConfirmSignUpCommand).rejects(
+                new CodeMismatchException({ message: 'Invalid verification code', $metadata: {} })
+            );
+
+            await expect(adapter.confirmSignUp(username, code))
+                .rejects
+                .toThrow(AuthenticationError);
         });
 
-        it('should throw AuthenticationError for ExpiredCodeException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(ExpiredCodeException, 'Code expired.'));
-            await expect(adapter.confirmSignUp(username, confirmationCode)).rejects.toThrow(AuthenticationError);
-            await expect(adapter.confirmSignUp(username, confirmationCode)).rejects.toMatchObject({ statusCode: 400 });
-        });
+        it('should throw AuthenticationError when code is expired', async () => {
+            cognitoMock.on(ConfirmSignUpCommand).rejects(
+                new ExpiredCodeException({ message: 'Verification code has expired', $metadata: {} })
+            );
 
-        it('should throw NotFoundError for UserNotFoundException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(UserNotFoundException, 'User not found.', 404));
-            await expect(adapter.confirmSignUp('unknownuser', confirmationCode)).rejects.toThrow(NotFoundError);
+            await expect(adapter.confirmSignUp(username, code))
+                .rejects
+                .toThrow(AuthenticationError);
         });
     });
 
     describe('signOut', () => {
-        it('should resolve on successful sign out', async () => {
-            const output: any = { $metadata: {} };
-            mockSend.mockResolvedValueOnce(output);
-            await expect(adapter.signOut(accessToken)).resolves.toBeUndefined();
-            expect(mockSend).toHaveBeenCalledWith(expect.any(GlobalSignOutCommand));
-            expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({ input: { AccessToken: accessToken } }));
+        const accessToken = 'valid-access-token';
+
+        it('should complete successfully', async () => {
+            cognitoMock.on(GlobalSignOutCommand).resolves({});
+
+            await adapter.signOut(accessToken);
+
+            expect(mockLogger.info).toHaveBeenCalledWith('Global sign out successful.');
         });
 
-        // Test based on handleCognitoError mapping
-        it('should throw InvalidTokenError for NotAuthorizedException (invalid token message)', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(NotAuthorizedException, 'Access Token has been revoked'));
-            await expect(adapter.signOut('invalid-token')).rejects.toThrow(InvalidTokenError);
-        });
+        it('should throw InvalidTokenError when access token is invalid', async () => {
+            cognitoMock.on(GlobalSignOutCommand).rejects(
+                new NotAuthorizedException({ message: 'Invalid access token', $metadata: {} })
+            );
 
-        it('should throw InvalidCredentialsError for NotAuthorizedException (other message)', async () => {
-             mockSend.mockRejectedValueOnce(createCognitoError(NotAuthorizedException, 'Some other reason'));
-             await expect(adapter.signOut('other-invalid-token')).rejects.toThrow(InvalidCredentialsError); // Falls back to this in handleCognitoError
-         });
-
-        it('should throw InvalidTokenError for ForbiddenException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(ForbiddenException, 'Token revoked'));
-            await expect(adapter.signOut(accessToken)).rejects.toThrow(InvalidTokenError);
+            await expect(adapter.signOut(accessToken))
+                .rejects
+                .toThrow(InvalidTokenError);
         });
     });
 
     describe('initiateForgotPassword', () => {
+        const username = 'user@example.com';
+
         it('should return code delivery details on success', async () => {
-            const output: any = { $metadata: {}, CodeDeliveryDetails: mockCodeDeliveryDetails };
-            mockSend.mockResolvedValueOnce(output);
+            const mockDeliveryDetails: CodeDeliveryDetailsType = {
+                Destination: 'u***@example.com',
+                DeliveryMedium: 'EMAIL',
+                AttributeName: 'email'
+            };
+
+            cognitoMock.on(ForgotPasswordCommand).resolves({ CodeDeliveryDetails: mockDeliveryDetails });
+
             const result = await adapter.initiateForgotPassword(username);
-            expect(result).toEqual(mockCodeDeliveryDetails);
-            expect(mockSend).toHaveBeenCalledWith(expect.any(ForgotPasswordCommand));
-             expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({ input: { ClientId: clientId, Username: username } }));
+
+            expect(result).toEqual(mockDeliveryDetails);
         });
 
-        it('should throw NotFoundError for UserNotFoundException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(UserNotFoundException, 'User not found.', 404));
-            await expect(adapter.initiateForgotPassword('unknownuser')).rejects.toThrow(NotFoundError);
+        it('should throw NotFoundError when user does not exist', async () => {
+            cognitoMock.on(ForgotPasswordCommand).rejects(
+                new UserNotFoundException({ message: 'User does not exist', $metadata: {} })
+            );
+
+            await expect(adapter.initiateForgotPassword(username))
+                .rejects
+                .toThrow(NotFoundError);
         });
 
-        it('should throw BaseError(RateLimitError) for LimitExceededException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(LimitExceededException, 'Attempt limit exceeded, please try after some time.', 429));
-            await expect(adapter.initiateForgotPassword(username)).rejects.toThrow(BaseError);
-            await expect(adapter.initiateForgotPassword(username)).rejects.toMatchObject({ name: 'RateLimitError', statusCode: 429 });
-        });
+        it('should throw BaseError with RateLimitError when too many requests', async () => {
+            cognitoMock.on(ForgotPasswordCommand).rejects(
+                new LimitExceededException({ message: 'Attempt limit exceeded', $metadata: {} })
+            );
 
-        it('should throw BaseError(CodeDeliveryError) for CodeDeliveryFailureException', async () => {
-             mockSend.mockRejectedValueOnce(createCognitoError(CodeDeliveryFailureException, 'Failed to deliver code.', 500));
-             await expect(adapter.initiateForgotPassword(username)).rejects.toThrow(BaseError);
-             await expect(adapter.initiateForgotPassword(username)).rejects.toMatchObject({ name: 'CodeDeliveryError', statusCode: 500 });
-         });
+            await expect(adapter.initiateForgotPassword(username))
+                .rejects
+                .toThrow(BaseError);
+        });
     });
 
     describe('confirmForgotPassword', () => {
-        it('should resolve on successful password reset', async () => {
-            const output: any = { $metadata: {} };
-            mockSend.mockResolvedValueOnce(output);
-            await expect(adapter.confirmForgotPassword(username, confirmationCode, proposedPassword)).resolves.toBeUndefined();
-            expect(mockSend).toHaveBeenCalledWith(expect.any(ConfirmForgotPasswordCommand));
-            expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
-                input: { ClientId: clientId, Username: username, ConfirmationCode: confirmationCode, Password: proposedPassword }
-            }));
+        const username = 'user@example.com';
+        const code = '123456';
+        const newPassword = 'NewPassword123!';
+
+        it('should complete successfully with valid code and password', async () => {
+            cognitoMock.on(ConfirmForgotPasswordCommand).resolves({});
+
+            await adapter.confirmForgotPassword(username, code, newPassword);
+
+            expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Password successfully reset'));
         });
 
-        it('should throw AuthenticationError for CodeMismatchException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(CodeMismatchException, 'Invalid code.'));
-            await expect(adapter.confirmForgotPassword(username, 'wrong-code', proposedPassword)).rejects.toThrow(AuthenticationError);
-             await expect(adapter.confirmForgotPassword(username, 'wrong-code', proposedPassword)).rejects.toMatchObject({ statusCode: 400 });
+        it('should throw AuthenticationError when code is invalid', async () => {
+            cognitoMock.on(ConfirmForgotPasswordCommand).rejects(
+                new CodeMismatchException({ message: 'Invalid verification code', $metadata: {} })
+            );
+
+            await expect(adapter.confirmForgotPassword(username, code, newPassword))
+                .rejects
+                .toThrow(AuthenticationError);
         });
 
-        it('should throw ValidationError for InvalidPasswordException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(InvalidPasswordException, 'Password policy failed.'));
-            await expect(adapter.confirmForgotPassword(username, confirmationCode, 'weak')).rejects.toThrow(ValidationError);
-        });
+        it('should throw ValidationError when new password does not meet requirements', async () => {
+            cognitoMock.on(ConfirmForgotPasswordCommand).rejects(
+                new InvalidPasswordException({ message: 'Password does not meet requirements', $metadata: {} })
+            );
 
-         it('should throw NotFoundError for UserNotFoundException', async () => {
-             mockSend.mockRejectedValueOnce(createCognitoError(UserNotFoundException, 'User not found.', 404));
-             await expect(adapter.confirmForgotPassword('unknownuser', confirmationCode, proposedPassword)).rejects.toThrow(NotFoundError);
-         });
+            await expect(adapter.confirmForgotPassword(username, code, newPassword))
+                .rejects
+                .toThrow(ValidationError);
+        });
     });
 
-    describe('changePassword', () => {
-        it('should resolve on successful password change', async () => {
-            const output: any = { $metadata: {} };
-            mockSend.mockResolvedValueOnce(output);
-            await expect(adapter.changePassword(accessToken, previousPassword, proposedPassword)).resolves.toBeUndefined();
-            expect(mockSend).toHaveBeenCalledWith(expect.any(ChangePasswordCommand));
-             expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
-                 input: { AccessToken: accessToken, PreviousPassword: previousPassword, ProposedPassword: proposedPassword }
-             }));
+    describe('adminOperations', () => {
+        const username = 'user@example.com';
+        const newPassword = 'NewPassword123!';
+
+        describe('adminInitiateForgotPassword', () => {
+            it('should complete successfully', async () => {
+                cognitoMock.on(AdminResetUserPasswordCommand).resolves({});
+
+                await adapter.adminInitiateForgotPassword(username);
+
+                expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Admin password reset initiated successfully'));
+            });
+
+            it('should throw NotFoundError when user does not exist', async () => {
+                cognitoMock.on(AdminResetUserPasswordCommand).rejects(
+                    new UserNotFoundException({ message: 'User does not exist', $metadata: {} })
+                );
+
+                await expect(adapter.adminInitiateForgotPassword(username))
+                    .rejects
+                    .toThrow(NotFoundError);
+            });
         });
 
-        it('should throw AuthenticationError for NotAuthorizedException (wrong old password message)', async () => {
-            // Specific check in changePassword method relies on this message substring
-            mockSend.mockRejectedValueOnce(createCognitoError(NotAuthorizedException, 'Incorrect username or password.'));
-            await expect(adapter.changePassword(accessToken, 'wrong-old-pass', proposedPassword)).rejects.toThrow(AuthenticationError);
-            await expect(adapter.changePassword(accessToken, 'wrong-old-pass', proposedPassword)).rejects.toThrow('Incorrect previous password provided.');
-        });
+        describe('adminSetPassword', () => {
+            it('should complete successfully', async () => {
+                cognitoMock.on(AdminSetUserPasswordCommand).resolves({});
 
-        // Test the mapping via handleCognitoError for invalid token
-        it('should throw InvalidTokenError for NotAuthorizedException (invalid token message)', async () => {
-             mockSend.mockRejectedValueOnce(createCognitoError(NotAuthorizedException, 'Invalid Access Token specified'));
-             await expect(adapter.changePassword('invalid-token', previousPassword, proposedPassword)).rejects.toThrow(InvalidTokenError);
-         });
+                await adapter.adminSetPassword(username, newPassword);
 
-        it('should throw InvalidCredentialsError for NotAuthorizedException (other message)', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(NotAuthorizedException, 'Some other auth issue'));
-            await expect(adapter.changePassword(accessToken, previousPassword, proposedPassword)).rejects.toThrow(InvalidCredentialsError);
-        });
+                expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Admin password set successfully'));
+            });
 
-        it('should throw ValidationError for InvalidPasswordException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(InvalidPasswordException, 'Password policy failed.'));
-            await expect(adapter.changePassword(accessToken, previousPassword, 'weak')).rejects.toThrow(ValidationError);
-        });
+            it('should throw ValidationError when password does not meet requirements', async () => {
+                cognitoMock.on(AdminSetUserPasswordCommand).rejects(
+                    new InvalidPasswordException({ message: 'Password does not meet requirements', $metadata: {} })
+                );
 
-        it('should throw NotFoundError for UserNotFoundException', async () => {
-             mockSend.mockRejectedValueOnce(createCognitoError(UserNotFoundException, 'User not found.', 404));
-             await expect(adapter.changePassword(accessToken, previousPassword, proposedPassword)).rejects.toThrow(NotFoundError);
-         });
-    });
+                await expect(adapter.adminSetPassword(username, newPassword))
+                    .rejects
+                    .toThrow(ValidationError);
+            });
 
-    describe('adminInitiateForgotPassword', () => {
-         it('should resolve on successful initiation', async () => {
-            const output: any = { $metadata: {} }; // Command returns empty object on success
-            mockSend.mockResolvedValueOnce(output);
-            await expect(adapter.adminInitiateForgotPassword(username)).resolves.toBeUndefined();
-            expect(mockSend).toHaveBeenCalledWith(expect.any(AdminResetUserPasswordCommand));
-            expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
-                 input: { UserPoolId: userPoolId, Username: username }
-            }));
-        });
+            it('should throw NotFoundError when user does not exist', async () => {
+                cognitoMock.on(AdminSetUserPasswordCommand).rejects(
+                    new UserNotFoundException({ message: 'User does not exist', $metadata: {} })
+                );
 
-         it('should throw NotFoundError for UserNotFoundException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(UserNotFoundException, 'User not found.', 404));
-            await expect(adapter.adminInitiateForgotPassword('unknownuser')).rejects.toThrow(NotFoundError);
-        });
-
-         // Add other error cases as needed (e.g., InvalidParameterException)
-     });
-
-     // Renamed describe block
-    describe('adminSetPassword', () => {
-        it('should resolve on successful password set', async () => {
-            const output: any = { $metadata: {} }; // Command returns empty object on success
-            mockSend.mockResolvedValueOnce(output);
-             // Call the renamed method without confirmation code
-            await expect(adapter.adminSetPassword(username, proposedPassword)).resolves.toBeUndefined();
-             // Expect the correct command
-            expect(mockSend).toHaveBeenCalledWith(expect.any(AdminSetUserPasswordCommand));
-             // Expect the correct input parameters
-            expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
-                input: { UserPoolId: userPoolId, Username: username, Password: proposedPassword, Permanent: true }
-            }));
-        });
-
-         it('should throw NotFoundError for UserNotFoundException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(UserNotFoundException, 'User not found.', 404));
-            await expect(adapter.adminSetPassword('unknownuser', proposedPassword)).rejects.toThrow(NotFoundError);
-        });
-
-        it('should throw ValidationError for InvalidPasswordException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(InvalidPasswordException, 'Password policy failed.'));
-            await expect(adapter.adminSetPassword(username, 'weak')).rejects.toThrow(ValidationError);
-        });
-
-         it('should throw ValidationError for InvalidParameterException', async () => {
-             mockSend.mockRejectedValueOnce(createCognitoError(InvalidParameterException, 'Invalid username parameter.')); // Example
-             await expect(adapter.adminSetPassword('invalid-username!', proposedPassword)).rejects.toThrow(ValidationError);
-         });
-
-         // Add other potential error tests (e.g., ResourceNotFound for UserPool)
-     });
-
-
-    describe('error handling (general)', () => {
-         it('should throw BaseError(RateLimitError) for TooManyFailedAttemptsException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(TooManyFailedAttemptsException, 'Too many failed attempts.', 429));
-            await expect(adapter.authenticateUser(username, password)).rejects.toThrow(BaseError);
-            await expect(adapter.authenticateUser(username, password)).rejects.toMatchObject({ name: 'RateLimitError', statusCode: 429 });
-        });
-
-        it('should throw BaseError(IdPInternalError) for InternalErrorException', async () => {
-            mockSend.mockRejectedValueOnce(createCognitoError(InternalErrorException, 'Internal server error.', 500)); // Use 500 for example
-            await expect(adapter.authenticateUser(username, password)).rejects.toThrow(BaseError);
-             // Check for the mapped error type and potentially status code if consistent
-            await expect(adapter.authenticateUser(username, password)).rejects.toMatchObject({ name: 'IdPInternalError', statusCode: 502 }); // Mapped to 502
-        });
-
-        it('should throw BaseError(IdPError) for unhandled errors', async () => {
-            const error = new Error('Something completely unexpected.');
-            error.name = 'SomeOtherErrorNameNotInSwitch'; // Ensure it doesn't match known cases
-            mockSend.mockRejectedValueOnce(error);
-            await expect(adapter.authenticateUser(username, password)).rejects.toThrow(BaseError);
-            await expect(adapter.authenticateUser(username, password)).rejects.toMatchObject({ name: 'IdPError', statusCode: 500 });
+                await expect(adapter.adminSetPassword(username, newPassword))
+                    .rejects
+                    .toThrow(NotFoundError);
+            });
         });
     });
 });

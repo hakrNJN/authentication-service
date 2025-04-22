@@ -128,15 +128,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
             AuthParameters: { USERNAME: username, PASSWORD: password },
         };
         try {
-             // --- MODIFICATION START ---
-            // Comment out the resilient wrapper call
-            // const response: InitiateAuthCommandOutput = await this.resilientInitiateAuth(params);
-
-            // Replace with a direct call using the (mocked) client
-            console.log('[CognitoAuthAdapter.authenticateUser] Calling this.client.send directly');
-            const response = await this.client.send(new InitiateAuthCommand(params));
-            this.logger.debug('[CognitoAuthAdapter.authenticateUser] Direct this.client.send call returned:', response);
-            // --- MODIFICATION END ---
+           const response: InitiateAuthCommandOutput = await this.resilientInitiateAuth(params);
 
             if (response.AuthenticationResult) {
                 this.logger.info(`Authentication successful for user: ${username}`);
@@ -444,24 +436,22 @@ export class CognitoAuthAdapter implements IAuthAdapter {
     }
 
     private handleCognitoError(error: any, contextMessage: string): never {
-        // Keep minimal logging for production, add details for debug builds if needed
         this.logger.error(`${contextMessage}: ${error.name || 'UnknownError'} - ${error.message}`, {
-             errorName: error?.name,
-             // Include stack in debug, omit in production for brevity/security?
-             // stack: error?.stack
+            errorName: error?.name,
         });
 
         const errorName = error.name || 'UnknownError';
 
-        // Use instanceof checks where possible for slightly more robustness than string names
-        // Note: Direct instanceof doesn't work easily across different SDK versions/modules sometimes
-        // Sticking to error.name is often the most practical approach with AWS SDK v3 errors
-
         switch (errorName) {
-            case NotAuthorizedException.name: // Use .name for consistency
-                // Note: Relies on string matching in the message to differentiate causes. This can be brittle.
-                if (error.message?.includes('Access Token')) {
-                    throw new InvalidTokenError(error.message);
+            case NotAuthorizedException.name:
+                // Check message for token-related errors first
+                if (error.message?.toLowerCase().includes('token') || 
+                    contextMessage.toLowerCase().includes('token')) {
+                    throw new InvalidTokenError(error.message || 'Invalid token');
+                }
+                // Then check for password-specific message
+                if (error.message?.toLowerCase().includes('incorrect password')) {
+                    throw new InvalidCredentialsError('Incorrect password provided');
                 }
                 // Default to InvalidCredentials for other NotAuthorized scenarios
                 throw new InvalidCredentialsError(error.message || 'Invalid credentials');
@@ -469,6 +459,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
             case UserNotFoundException.name:
                 throw new NotFoundError('User not found');
 
+            case 'UsernameExistsException':
             case UsernameExistsException.name:
                 throw new ValidationError('Username already exists');
 
