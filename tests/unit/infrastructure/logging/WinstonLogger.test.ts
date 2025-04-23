@@ -1,4 +1,4 @@
-// Create a singleton mock logger instance
+// Mock winston module before imports
 const mockLoggerInstance = {
     info: jest.fn(),
     warn: jest.fn(),
@@ -7,57 +7,71 @@ const mockLoggerInstance = {
     add: jest.fn()
 };
 
-// Mock winston module before imports
+// Create the createLogger mock
+const createLoggerMock = jest.fn().mockReturnValue(mockLoggerInstance);
+
+// Mock winston
 jest.mock('winston', () => ({
-    createLogger: jest.fn().mockReturnValue(mockLoggerInstance),
-    transports: {
-        Console: jest.fn()
-    },
+    createLogger: createLoggerMock,
     format: {
-        combine: jest.fn().mockReturnValue({}),
-        timestamp: jest.fn().mockReturnValue({}),
-        errors: jest.fn().mockReturnValue({}),
-        json: jest.fn().mockReturnValue({}),
-        colorize: jest.fn().mockReturnValue({}),
-        printf: jest.fn().mockReturnValue({}),
-        splat: jest.fn().mockReturnValue({}),
-        metadata: jest.fn().mockReturnValue({})
+        combine: jest.fn(),
+        timestamp: jest.fn(),
+        errors: jest.fn(),
+        metadata: jest.fn(),
+        json: jest.fn(),
+        colorize: jest.fn(),
+        printf: jest.fn(),
+        splat: jest.fn()
+    },
+    transports: {
+        Console: jest.fn(),
+        File: jest.fn()
     }
 }));
 
 // Mock winston-cloudwatch
-const mockCloudWatchTransport = {
+const mockCloudWatchTransport = jest.fn().mockImplementation(() => ({
     on: jest.fn(),
     emit: jest.fn(),
     log: jest.fn()
-};
+}));
 
-jest.mock('winston-cloudwatch', () => jest.fn().mockImplementation(() => mockCloudWatchTransport));
+jest.mock('winston-cloudwatch', () => mockCloudWatchTransport);
 
 import { container } from 'tsyringe';
 import winston from 'winston';
 import { IConfigService } from '../../../../src/application/interfaces/IConfigService';
+import { LogFormats } from '../../../../src/infrastructure/logging/logger.config';
 import { WinstonLogger } from '../../../../src/infrastructure/logging/WinstonLogger';
 import { TYPES } from '../../../../src/shared/constants/types';
+
+// Mock LogFormats
+jest.mock('../../../../src/infrastructure/logging/logger.config', () => ({
+    LogFormats: {
+        productionFormat: Symbol('productionFormat'),
+        developmentFormat: Symbol('developmentFormat')
+    }
+}));
+
+// Mock console to avoid noise during tests
+const originalConsoleInfo = console.info;
+console.info = jest.fn();
 
 describe('WinstonLogger', () => {
     let logger: WinstonLogger;
     let mockConfigService: jest.Mocked<IConfigService>;
 
     beforeEach(() => {
-        // Reset all mocks
         jest.clearAllMocks();
         
-        // Create mock config service
         mockConfigService = {
             get: jest.fn(),
             getNumber: jest.fn(),
             getBoolean: jest.fn(),
             getAllConfig: jest.fn(),
-            has: jest.fn(),
+            has: jest.fn()
         };
 
-        // Clear container and register mock
         container.clearInstances();
         container.registerInstance<IConfigService>(TYPES.ConfigService, mockConfigService);
 
@@ -69,15 +83,28 @@ describe('WinstonLogger', () => {
                 default: return undefined;
             }
         });
+        
+        // Reset the createLogger mock to return a fresh instance
+        createLoggerMock.mockReturnValue(mockLoggerInstance);
+    });
+
+    afterAll(() => {
+        // Restore console.info
+        console.info = originalConsoleInfo;
     });
 
     describe('Constructor', () => {
         it('should initialize with development settings', () => {
             logger = container.resolve(WinstonLogger);
             
-            expect(winston.createLogger).toHaveBeenCalled();
-            expect(winston.transports.Console).toHaveBeenCalled();
-            expect(mockLoggerInstance).toBeDefined();
+            expect(winston.createLogger).toHaveBeenCalledWith({
+                level: 'debug',
+                format: LogFormats.developmentFormat,
+                transports: [expect.any(Object)]
+            });
+            expect(winston.transports.Console).toHaveBeenCalledWith({
+                level: 'debug'
+            });
         });
 
         it('should initialize with production settings and CloudWatch', () => {
@@ -94,9 +121,17 @@ describe('WinstonLogger', () => {
 
             logger = container.resolve(WinstonLogger);
 
-            expect(winston.createLogger).toHaveBeenCalled();
-            expect(winston.transports.Console).toHaveBeenCalled();
-            expect(mockLoggerInstance.add).toHaveBeenCalledTimes(1);
+            expect(winston.createLogger).toHaveBeenCalledWith({
+                level: 'info',
+                format: LogFormats.productionFormat,
+                transports: [expect.any(Object)]
+            });
+            expect(mockLoggerInstance.add).toHaveBeenCalled();
+            expect(mockCloudWatchTransport).toHaveBeenCalledWith({
+                logGroupName: 'test-group',
+                logStreamName: 'test-stream',
+                awsRegion: 'us-east-1',
+            });
         });
     });
 

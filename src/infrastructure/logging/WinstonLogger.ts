@@ -4,6 +4,7 @@ import CloudWatchTransport from 'winston-cloudwatch';
 import { IConfigService } from '../../application/interfaces/IConfigService';
 import { ILogger } from '../../application/interfaces/ILogger';
 import { TYPES } from '../../shared/constants/types';
+import { LogFormats } from './logger.config';
 
 type NodeEnv = 'development' | 'production' | 'test';
 
@@ -14,20 +15,21 @@ export class WinstonLogger implements ILogger {
     constructor(
         @inject(TYPES.ConfigService) private configService: IConfigService
     ) {
+        this._logger = this.initializeLogger();
+    }
+
+    private initializeLogger(): winston.Logger {
         const logLevel = this.configService.get('LOG_LEVEL', 'info');
         const nodeEnv = this.configService.get<NodeEnv>('NODE_ENV', 'development');
 
         // Create base logger with console transport
-        this._logger = winston.createLogger({
+        const logger = winston.createLogger({
             level: logLevel,
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                winston.format.errors({ stack: true }),
-                winston.format.metadata(),
-                winston.format.json()
-            ),
+            format: nodeEnv === 'production' ? LogFormats.productionFormat : LogFormats.developmentFormat,
             transports: [
-                new winston.transports.Console()
+                new winston.transports.Console({
+                    level: logLevel
+                })
             ]
         });
 
@@ -44,49 +46,52 @@ export class WinstonLogger implements ILogger {
                     awsRegion,
                 });
 
-                this._logger.add(cloudWatchTransport);
+                logger.add(cloudWatchTransport);
                 console.info(`[WinstonLogger] CloudWatch transport configured for group "${logGroupName}" and stream "${logStreamName}"`);
             }
         }
 
         console.info(`[WinstonLogger] Logger initialized with level "${logLevel}" in "${nodeEnv}" environment.`);
-    }
-
-    get logger(): winston.Logger {
-        if (!this._logger) {
-            throw new Error('Logger not initialized');
-        }
-        return this._logger;
+        return logger;
     }
 
     info(message: string, meta?: Record<string, any>): void {
         if (!message) return;
-        this.logger.info(message, meta);
+        this._logger.info(message, meta);
     }
 
     warn(message: string, meta?: Record<string, any>): void {
         if (!message) return;
-        this.logger.warn(message, meta);
+        this._logger.warn(message, meta);
     }
 
     error(message: string, error?: Error | any, meta?: Record<string, any>): void {
         if (!message) return;
-        const logMeta = {
-            ...meta,
-            ...(error instanceof Error && {
-                error: {
-                    name: error.name,
-                    message: error.message,
-                    stack: error.stack
-                }
-            }),
-            ...(!(error instanceof Error) && error !== undefined && { error })
-        };
-        this.logger.error(message, logMeta);
+        
+        let logMeta = meta || {};
+        if (error) {
+            if (error instanceof Error) {
+                logMeta = {
+                    ...logMeta,
+                    error: {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack
+                    }
+                };
+            } else {
+                logMeta = {
+                    ...logMeta,
+                    error
+                };
+            }
+        }
+        
+        this._logger.error(message, logMeta);
     }
 
     debug(message: string, meta?: Record<string, any>): void {
         if (!message) return;
-        this.logger.debug(message, meta);
+        this._logger.debug(message, meta);
     }
 }
