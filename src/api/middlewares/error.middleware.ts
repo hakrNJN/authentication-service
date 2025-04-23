@@ -1,7 +1,8 @@
-import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
+import { ErrorRequestHandler } from 'express';
 import { IConfigService } from '../../application/interfaces/IConfigService';
 import { ILogger } from '../../application/interfaces/ILogger';
-import { BaseError } from '../../shared/errors/BaseError'; // Adjust path if BaseError moves
+import { AuthenticationError, InvalidCredentialsError, ValidationError } from '../../domain';
+import { BaseError } from '../../shared/errors/BaseError';
 
 /**
  * Factory function to create the global error handling middleware.
@@ -15,41 +16,47 @@ export const createErrorMiddleware = (
     logger: ILogger,
     configService: IConfigService
 ): ErrorRequestHandler => {
-    // Return the actual middleware function
-    return (err: Error, req: Request, res: Response, next: NextFunction): void => {
+    return (err: Error | string, req, res, next) => {
         // If headers already sent, delegate to default Express error handler
         if (res.headersSent) {
-            logger.warn('Error occurred after headers were sent, delegating to default handler.', { errorName: err.name, path: req.path });
+            logger.warn('Error occurred after headers were sent, delegating to default handler.', { 
+                errorName: err instanceof Error ? err.name : typeof err,
+                path: req.originalUrl 
+            });
             return next(err);
         }
 
-        // Log the error with context
-        logger.error(`Error processing request ${req.method} ${req.originalUrl}: ${err.message}`, err);
-
         const isDevelopment = configService.get('NODE_ENV') === 'development';
+        const error = err instanceof Error ? err : new Error(String(err));
 
-        if (err instanceof BaseError && err.isOperational) {
-            // Known operational errors (Validation, NotFound, Auth, etc.)
-             res.status(err.statusCode).json({
-                status: 'error',
-                name: err.name,
-                message: err.message,
-                // Optionally include stack trace and details in development
-                ...(isDevelopment && {
-                    stack: err.stack,
-                    details: (err as any).details // Include details if present (e.g., from ValidationError)
-                 }),
-            });
+        // Log errors appropriately
+        if (error instanceof BaseError) {
+            logger.error(error.message, error);
+        } else if (error instanceof ValidationError) {
+            logger.error(`Error processing request ${req.method} ${req.originalUrl}: ${error.message}`, error);
         } else {
-            // Unknown/programmer errors - avoid leaking details in production
-             res.status(500).json({
-                status: 'error',
-                name: isDevelopment && err instanceof Error ? err.name : 'InternalServerError',
-                message: isDevelopment && err instanceof Error ? err.message : 'An unexpected internal server error occurred.',
-                 // Optionally include stack trace in development
-                ...(isDevelopment && err instanceof Error && { stack: err.stack }),
-            });
+            logger.error(`Error processing request ${req.method} ${req.originalUrl}: ${error.name}`, error);
         }
+
+        // Determine status code based on error type
+        let statusCode = 500;
+        if (error instanceof ValidationError) {
+            statusCode = 400;
+        } else if (error instanceof InvalidCredentialsError || error instanceof AuthenticationError) {
+            statusCode = 401;
+        } else if (error instanceof BaseError) {
+            statusCode = error.statusCode;
+        }
+
+        // Prepare response
+        const response = {
+            status: 'error',
+            name: isDevelopment ? error.name : (statusCode === 500 ? 'InternalServerError' : error.name),
+            message: isDevelopment || statusCode !== 500 ? error.message : 'An unexpected error occurred',
+            ...(isDevelopment && error.stack && { stack: error.stack })
+        };
+
+        res.status(statusCode).json(response);
     };
 };
 
