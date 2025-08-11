@@ -57,11 +57,7 @@ export class AuthController {
     };
     logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const authHeader = req.headers.authorization;
-            if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                throw new AuthenticationError('Authorization header missing or invalid');
-            }
-            const accessToken = authHeader.split(' ')[1];
+            const accessToken = (req as any).user.accessToken; // Get token from user object
             await this.authService.logout(accessToken);
             res.status(204).send();
         } catch (error) { next(error); }

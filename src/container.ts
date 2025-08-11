@@ -5,9 +5,11 @@ import { TYPES } from './shared/constants/types';
 import { IAuthAdapter } from './application/interfaces/IAuthAdapter';
 import { IConfigService } from './application/interfaces/IConfigService';
 import { ILogger } from './application/interfaces/ILogger';
+import { ITokenBlacklistService } from './application/interfaces/ITokenBlacklistService';
 // --- Import Implementations (Adapters/Services) ---
 import { IAuthService } from './application/interfaces/IAuthService';
 import { AuthService } from './application/services/auth.service';
+import { TokenBlacklistService } from './application/services/TokenBlacklistService';
 import { CognitoAuthAdapter } from './infrastructure/adapters/cognito/CognitoAuthAdapter';
 import { EnvironmentConfigService } from './infrastructure/config/EnvironmentConfigService';
 import { WinstonLogger } from './infrastructure/logging/WinstonLogger';
@@ -32,6 +34,7 @@ container.registerSingleton<IAuthAdapter>(TYPES.AuthAdapter, CognitoAuthAdapter)
 
 // Authentication Service
 container.registerSingleton<IAuthService>(TYPES.AuthService, AuthService);
+container.registerSingleton<ITokenBlacklistService>(TYPES.TokenBlacklistService, TokenBlacklistService);
 
 // --- Register Controllers (Usually Transient - new instance per request) ---
 // tsyringe typically handles controller resolution automatically if they are decorated

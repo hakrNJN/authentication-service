@@ -5,6 +5,12 @@ import { z } from 'zod';
  */
 export const SignUpSchema = z.object({
     body: z.object({
+        // TODO: Add deeper semantic validation here.
+        // For example, check for common weak passwords.
+        // Validate username against existing users (requires service call).
+        // Validate email domain against a blacklist.
+        // Ensure custom attributes meet specific business rules.
+
         username: z.string({ required_error: 'Username is required' })
                      .min(3, 'Username must be at least 3 characters long') // Example minimum length
                      .max(100, 'Username cannot exceed 100 characters'),

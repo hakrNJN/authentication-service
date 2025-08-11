@@ -306,7 +306,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
         }
     }
 
-    async signOut(accessToken: string): Promise<void> {
+    async logout(accessToken: string): Promise<void> {
         this.logger.info(`Attempting global sign out.`);
         const params: GlobalSignOutCommandInput = {
             AccessToken: accessToken,

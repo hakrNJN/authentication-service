@@ -14,8 +14,7 @@ import {
     SignUpSchema,
     VerifyMfaSchema // New schema import
 } from '../dtos';
-// TODO: Import authentication guard middleware when created
-// import { authGuardMiddleware } from '../middlewares';
+import { authGuardMiddleware } from './middlewares/auth.guard.middleware';
 
 // Resolve dependencies
 const authController = container.resolve(AuthController);
@@ -43,14 +42,14 @@ router.post('/reset-password', validationMiddleware(ResetPasswordSchema, logger)
 // TODO: Apply authGuardMiddleware to '/change-password'
 router.post(
     '/change-password',
-    // authGuardMiddleware, // Apply guard
+    authGuardMiddleware(), // Apply guard
     validationMiddleware(ChangePasswordSchema, logger),
     authController.changePassword.bind(authController)
 );
 
 // User Info & Logout
 // TODO: Apply authGuardMiddleware to '/me' and '/logout'
-router.get('/me', /* authGuardMiddleware, */ authController.getUserInfo.bind(authController));
-router.post('/logout', /* authGuardMiddleware, */ authController.logout.bind(authController));
+router.get('/me', authGuardMiddleware(), authController.getUserInfo.bind(authController));
+router.post('/logout', authGuardMiddleware(), authController.logout.bind(authController));
 
 export default router;

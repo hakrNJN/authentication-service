@@ -12,7 +12,10 @@ export class EnvironmentConfigService implements IConfigService {
         'LOG_LEVEL',
         'AWS_REGION',
         'COGNITO_USER_POOL_ID',
-        'COGNITO_CLIENT_ID'
+        'COGNITO_CLIENT_ID',
+        'SHARED_SECRET', // Added for shared secret authentication
+        'REDIS_URL', // Added for Redis blacklist
+        'USE_REDIS_BLACKLIST' // Added for Redis blacklist toggle
         // Add other *essential* keys here
     ];
 
@@ -26,6 +29,12 @@ export class EnvironmentConfigService implements IConfigService {
     ];
 
     constructor() {
+        // TODO: Integrate with a dedicated secret management solution (e.g., AWS Secrets Manager, HashiCorp Vault).
+        // This would involve fetching secrets at startup and populating `this.config` with them.
+        // Example:
+        // const fetchedSecrets = await getSecretsFromAwsSecretsManager();
+        // this.config = { ...process.env, ...fetchedSecrets };
+
         // --- Rely on process.env populated by Node's --env-file flag ---
         console.info(`[ConfigService] Reading configuration from process.env (expected to be populated by --env-file)`);
         this.config = process.env;

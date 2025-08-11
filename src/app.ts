@@ -17,7 +17,34 @@ import { TYPES } from './shared/constants/types';
  *
  * @returns The configured Express application.
  */
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { Resource } from '@opentelemetry/resources';
+import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+
 export function createApp(): Express {
+    // Initialize OpenTelemetry tracing here
+    const serviceName = 'authentication-service';
+    const collectorEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'grpc://localhost:4317';
+
+    const traceExporter = new OTLPTraceExporter({
+        url: collectorEndpoint,
+    });
+
+    const spanProcessor = new BatchSpanProcessor(traceExporter);
+
+    const sdk = new NodeSDK({
+        resource: new Resource({
+            [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
+        }),
+        spanProcessor: spanProcessor,
+        instrumentations: [getNodeAutoInstrumentations()],
+    });
+
+    sdk.start();
+
     // Resolve necessary dependencies for middleware setup
     const configService = container.resolve<IConfigService>(TYPES.ConfigService);
     const logger = container.resolve<ILogger>(TYPES.Logger);

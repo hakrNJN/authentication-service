@@ -8,7 +8,15 @@ import { TYPES } from '../../shared/constants/types';
 // Import specific domain errors via barrel file
 import { ChallengeNameType, CodeDeliveryDetailsType, LimitExceededException } from '@aws-sdk/client-cognito-identity-provider';
 import { AuthenticationError, MfaRequiredError, ValidationError } from '../../domain';
+import { ILogger } from '../interfaces/ILogger';
+import { ITokenBlacklistService } from '../interfaces/ITokenBlacklistService';
+// import { ITokenService } from '../interfaces/ITokenService'; // Uncomment if using custom tokens
+import { TYPES } from '../../shared/constants/types';
+// Import specific domain errors via barrel file
+import { ChallengeNameType, CodeDeliveryDetailsType, LimitExceededException } from '@aws-sdk/client-cognito-identity-provider';
+import { AuthenticationError, MfaRequiredError, ValidationError } from '../../domain';
 import { BaseError, NotFoundError } from '../../shared/errors/BaseError';
+import { decode } from 'jsonwebtoken';
 
 @injectable()
 export class AuthService implements IAuthService {
@@ -18,7 +26,8 @@ export class AuthService implements IAuthService {
     constructor(
         @inject(TYPES.Logger) private logger: ILogger,
         @inject(TYPES.ConfigService) private configService: IConfigService,
-        @inject(TYPES.AuthAdapter) private authAdapter: IAuthAdapter
+        @inject(TYPES.AuthAdapter) private authAdapter: IAuthAdapter,
+        @inject(TYPES.TokenBlacklistService) private tokenBlacklistService: ITokenBlacklistService
         // @inject(TYPES.TokenService) private tokenService: ITokenService // Uncomment if needed
     ) {
         this.logger.info('AuthService initialized.');
@@ -188,7 +197,18 @@ export class AuthService implements IAuthService {
             throw new ValidationError('Access token is required for logout.');
         }
         try {
-            await this.authAdapter.signOut(accessToken);
+            await this.authAdapter.logout(accessToken);
+
+            // Decode the token to get its expiry and jti
+            const decoded = decode(accessToken) as { exp?: number, jti?: string };
+            if (decoded && decoded.jti && decoded.exp) {
+                const expiresIn = decoded.exp - Math.floor(Date.now() / 1000); // Time until expiry in seconds
+                if (expiresIn > 0) {
+                    await this.tokenBlacklistService.addToBlacklist(decoded.jti, expiresIn);
+                    this.logger.info(`Access token ${decoded.jti} added to blacklist.`);
+                }
+            }
+
             this.logger.info('Logout successful.');
         } catch (error: any) {
             this.logger.error(`Logout failed: ${error.message}`, error);
