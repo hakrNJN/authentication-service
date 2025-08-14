@@ -8,13 +8,7 @@ import { TYPES } from '../../shared/constants/types';
 // Import specific domain errors via barrel file
 import { ChallengeNameType, CodeDeliveryDetailsType, LimitExceededException } from '@aws-sdk/client-cognito-identity-provider';
 import { AuthenticationError, MfaRequiredError, ValidationError } from '../../domain';
-import { ILogger } from '../interfaces/ILogger';
 import { ITokenBlacklistService } from '../interfaces/ITokenBlacklistService';
-// import { ITokenService } from '../interfaces/ITokenService'; // Uncomment if using custom tokens
-import { TYPES } from '../../shared/constants/types';
-// Import specific domain errors via barrel file
-import { ChallengeNameType, CodeDeliveryDetailsType, LimitExceededException } from '@aws-sdk/client-cognito-identity-provider';
-import { AuthenticationError, MfaRequiredError, ValidationError } from '../../domain';
 import { BaseError, NotFoundError } from '../../shared/errors/BaseError';
 import { decode } from 'jsonwebtoken';
 
@@ -191,13 +185,13 @@ export class AuthService implements IAuthService {
         }
     }
 
-    async logout(accessToken: string): Promise<void> {
+    async signOut(accessToken: string): Promise<void> {
         this.logger.info(`Logout requested.`);
         if (!accessToken) {
             throw new ValidationError('Access token is required for logout.');
         }
         try {
-            await this.authAdapter.logout(accessToken);
+            await this.authAdapter.signOut(accessToken);
 
             // Decode the token to get its expiry and jti
             const decoded = decode(accessToken) as { exp?: number, jti?: string };

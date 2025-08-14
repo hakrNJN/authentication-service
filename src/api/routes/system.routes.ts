@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { container } from '../../container';
 import { SystemController } from '../controllers/system.controller';
 
+import { registry } from '../../infrastructure/monitoring/metrics';
+
 // Resolve controller from container
 const systemController = container.resolve(SystemController);
 
@@ -11,6 +13,11 @@ const router = Router();
 // Define System Routes
 router.get('/health', systemController.getHealth);
 router.get('/server-info', systemController.getServerInfo);
+
+router.get('/metrics', async (req, res) => {
+    res.setHeader('Content-Type', registry.contentType);
+    res.end(await registry.metrics());
+});
 
 export default router;
 

@@ -18,11 +18,13 @@ import { TYPES } from './shared/constants/types';
  * @returns The configured Express application.
  */
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { Resource } from '@opentelemetry/resources';
+import { Resource, resourceFromAttributes } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+
+import { requestMetricsMiddleware } from './api/middlewares/requestMetrics.middleware';
 
 export function createApp(): Express {
     // Initialize OpenTelemetry tracing here
@@ -36,7 +38,7 @@ export function createApp(): Express {
     const spanProcessor = new BatchSpanProcessor(traceExporter);
 
     const sdk = new NodeSDK({
-        resource: new Resource({
+        resource: resourceFromAttributes({
             [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
         }),
         spanProcessor: spanProcessor,
@@ -67,6 +69,9 @@ export function createApp(): Express {
     }
     app.use(cors({ origin: corsOrigin })); // Read allowed origin from config
     logger.info(`CORS configured for origin: ${corsOrigin}`);
+
+    // Apply metrics middleware
+    app.use(requestMetricsMiddleware);
 
     // Body Parsers
     app.use(express.json());

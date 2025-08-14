@@ -30,7 +30,7 @@ describe('AuthController', () => {
       getUserInfo: jest.fn(),
       signUp: jest.fn(),
       confirmSignUp: jest.fn(),
-      logout: jest.fn(),
+      signOut: jest.fn(),
       initiateForgotPassword: jest.fn(),
       confirmForgotPassword: jest.fn(),
       changePassword: jest.fn(),
@@ -275,15 +275,15 @@ describe('AuthController', () => {
     });
   });
 
-  describe('logout', () => {
-    it('should return 204 on successful logout', async () => {
+  describe('signOut', () => {
+    it('should return 204 on successful signOut', async () => {
       const req = mockRequest({}, { authorization: 'Bearer valid_token' });
       const res = mockResponse();
-      mockAuthService.logout.mockResolvedValue(undefined);
+      mockAuthService.signOut.mockResolvedValue(undefined);
 
-      await controller.logout(req, res, mockNext);
+      await controller.signOut(req, res, mockNext);
 
-      expect(mockAuthService.logout).toHaveBeenCalledWith('valid_token');
+      expect(mockAuthService.signOut).toHaveBeenCalledWith('valid_token');
       expect(res.status).toHaveBeenCalledWith(204);
       expect(res.send).toHaveBeenCalled();
       expect(mockNext).not.toHaveBeenCalled();
@@ -293,24 +293,24 @@ describe('AuthController', () => {
       const req = mockRequest({}, {});
       const res = mockResponse();
 
-      await controller.logout(req, res, mockNext);
+      await controller.signOut(req, res, mockNext);
 
-      expect(mockAuthService.logout).not.toHaveBeenCalled();
+      expect(mockAuthService.signOut).not.toHaveBeenCalled();
       expect(res.status).not.toHaveBeenCalled();
       expect(res.send).not.toHaveBeenCalled();
       expect(mockNext).toHaveBeenCalledWith(expect.any(AuthenticationError));
       expect(mockNext).toHaveBeenCalledWith(expect.objectContaining({ message: 'Authorization header missing or invalid' }));
     });
 
-    it('should call next with error on logout failure', async () => {
+    it('should call next with error on signOut failure', async () => {
       const req = mockRequest({}, { authorization: 'Bearer invalid_token' });
       const res = mockResponse();
       const error = new AuthenticationError('Token is invalid.');
-      mockAuthService.logout.mockRejectedValue(error);
+      mockAuthService.signOut.mockRejectedValue(error);
 
-      await controller.logout(req, res, mockNext);
+      await controller.signOut(req, res, mockNext);
 
-      expect(mockAuthService.logout).toHaveBeenCalledWith('invalid_token');
+      expect(mockAuthService.signOut).toHaveBeenCalledWith('invalid_token');
       expect(res.status).not.toHaveBeenCalled();
       expect(res.send).not.toHaveBeenCalled();
       expect(mockNext).toHaveBeenCalledWith(error);

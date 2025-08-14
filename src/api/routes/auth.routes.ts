@@ -14,7 +14,7 @@ import {
     SignUpSchema,
     VerifyMfaSchema // New schema import
 } from '../dtos';
-import { authGuardMiddleware } from './middlewares/auth.guard.middleware';
+import { authGuardMiddleware } from '../middlewares/auth.guard.middleware';
 
 // Resolve dependencies
 const authController = container.resolve(AuthController);
@@ -50,6 +50,6 @@ router.post(
 // User Info & Logout
 // TODO: Apply authGuardMiddleware to '/me' and '/logout'
 router.get('/me', authGuardMiddleware(), authController.getUserInfo.bind(authController));
-router.post('/logout', authGuardMiddleware(), authController.logout.bind(authController));
+router.post('/logout', authGuardMiddleware(), authController.signOut.bind(authController));
 
 export default router;

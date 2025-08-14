@@ -330,26 +330,26 @@ describe('AuthService', () => {
         });
     });
 
-    // --- Logout ---
-    describe('logout', () => {
+    // --- SignOut ---
+    describe('signOut', () => {
         it('should complete successfully', async () => {
             mockAuthAdapter.signOut.mockResolvedValue(undefined);
 
-            await expect(authService.logout('valid_token')).resolves.toBeUndefined();
+            await expect(authService.signOut('valid_token')).resolves.toBeUndefined();
             expect(mockAuthAdapter.signOut).toHaveBeenCalledWith('valid_token');
             expect(mockLogger.info).toHaveBeenCalledWith('Logout requested.');
             expect(mockLogger.info).toHaveBeenCalledWith('Logout successful.');
         });
 
         it('should throw ValidationError if accessToken is missing', async () => {
-            await expect(authService.logout('')).rejects.toThrow(ValidationError);
+            await expect(authService.signOut('')).rejects.toThrow(ValidationError);
         });
 
         it('should re-throw AuthenticationError from adapter', async () => {
             const authError = new AuthenticationError('Invalid token');
             mockAuthAdapter.signOut.mockRejectedValue(authError);
 
-            await expect(authService.logout('invalid')).rejects.toThrow(AuthenticationError);
+            await expect(authService.signOut('invalid')).rejects.toThrow(AuthenticationError);
             expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('Logout failed'), authError);
         });
 
@@ -357,8 +357,8 @@ describe('AuthService', () => {
             const unexpectedError = new Error('Server issue');
             mockAuthAdapter.signOut.mockRejectedValue(unexpectedError);
 
-            await expect(authService.logout('valid')).rejects.toThrow(AuthenticationError); // Wraps as Auth Error
-            await expect(authService.logout('valid')).rejects.toThrow('Logout failed: Server issue');
+            await expect(authService.signOut('valid')).rejects.toThrow(AuthenticationError); // Wraps as Auth Error
+            await expect(authService.signOut('valid')).rejects.toThrow('Logout failed: Server issue');
             expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('Logout failed'), unexpectedError);
         });
     });

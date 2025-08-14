@@ -3,6 +3,7 @@ import {
     AdminResetUserPasswordCommandInput,
     AdminSetUserPasswordCommand,
     AdminSetUserPasswordCommandInput,
+    AdminAddUserToGroupCommand,
     AliasExistsException,
     AttributeType,
     AuthFlowType,
@@ -267,6 +268,9 @@ export class CognitoAuthAdapter implements IAuthAdapter {
         const attributesList: AttributeType[] = Object.entries(details.attributes)
             .map(([key, value]) => ({ Name: key, Value: value }));
 
+        // Add the custom:module attribute with an empty array string
+        attributesList.push({ Name: 'custom:module', Value: '[]' });
+
         const params: SignUpCommandInput = {
             ClientId: this.clientId,
             Username: details.username,
@@ -277,6 +281,25 @@ export class CognitoAuthAdapter implements IAuthAdapter {
         try {
             const response = await this.resilientSignUp(params);
             this.logger.info(`Signup successful for username: ${details.username}. UserSub: ${response.UserSub}`);
+
+            // Add user to 'users' group after successful signup
+            if (response.UserSub) {
+                try {
+                    await this.client.send(new AdminAddUserToGroupCommand({
+                        UserPoolId: this.userPoolId,
+                        Username: details.username,
+                        GroupName: 'users', // The default group name
+                    }));
+                    this.logger.info(`User ${details.username} successfully added to 'users' group.`);
+                } catch (groupError: any) {
+                    this.logger.error(`Failed to add user ${details.username} to 'users' group: ${groupError.message}`, groupError);
+                    // Decide how to handle this error:
+                    // 1. Re-throw to fail signup (more strict)
+                    // 2. Log and continue (less strict, user signs up but might not be in group)
+                    // For now, we'll log and continue, as the primary signup was successful.
+                }
+            }
+
             return {
                 userSub: response.UserSub ?? '', // Use nullish coalescing
                 userConfirmed: response.UserConfirmed ?? false, // Use nullish coalescing
@@ -306,7 +329,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
         }
     }
 
-    async logout(accessToken: string): Promise<void> {
+    async signOut(accessToken: string): Promise<void> {
         this.logger.info(`Attempting global sign out.`);
         const params: GlobalSignOutCommandInput = {
             AccessToken: accessToken,

@@ -7,7 +7,7 @@ export const mockAuthService: jest.Mocked<IAuthService> = {
     getUserInfo: jest.fn(),
     signUp: jest.fn(),
     confirmSignUp: jest.fn(),
-    logout: jest.fn(),
+    signOut: jest.fn(),
     initiateForgotPassword: jest.fn(),
     confirmForgotPassword: jest.fn(),
     changePassword: jest.fn(),

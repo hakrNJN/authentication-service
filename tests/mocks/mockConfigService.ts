@@ -41,6 +41,13 @@ const mockConfigServiceObj: IConfigService = {
         // Use the get method directly to check existence based on its current implementation
         return mockConfigServiceObj.get(key) !== undefined;
     }),
+    getOrThrow: jest.fn((key: string): any => {
+        const value = mockConfigServiceObj.get(key);
+        if (value === undefined) {
+            throw new Error(`Missing required mock configuration key: ${key}`);
+        }
+        return value;
+    }),
 };
 
 // Export the mock object typed as the interface
@@ -54,6 +61,7 @@ export const resetMockConfigService = () => {
     (mockConfigService.getBoolean as jest.Mock).mockClear();
     (mockConfigService.getAllConfig as jest.Mock).mockClear();
     (mockConfigService.has as jest.Mock).mockClear();
+    (mockConfigService.getOrThrow as jest.Mock).mockClear();
 
     // Reset implementations to defaults using the CORRECTED KEYS
     (mockConfigService.get as jest.Mock).mockImplementation((key: string): any => {
@@ -73,8 +81,8 @@ export const resetMockConfigService = () => {
          const num = Number(value);
          return isNaN(num) ? defaultValue : num;
      });
-    (mockConfigService.getBoolean as jest.Mock).mockImplementation((key: string, defaultValue?: boolean): boolean | undefined => {
-        const value = mockConfigService.get(key);
+            (mockConfigService.getBoolean as jest.Mock).mockImplementation((key: string, defaultValue?: boolean): boolean | undefined => {
+        const value = mockConfigService.get(key); // relies on the above implementation
         if (value === undefined) return defaultValue;
         if (typeof value === 'string') {
             if (value.toLowerCase() === 'true' || value === '1') return true;
@@ -94,5 +102,12 @@ export const resetMockConfigService = () => {
     (mockConfigService.has as jest.Mock).mockImplementation((key: string): boolean => {
          // Rely on the current get implementation
         return mockConfigService.get(key) !== undefined;
+    });
+    (mockConfigService.getOrThrow as jest.Mock).mockImplementation((key: string): any => {
+        const value = mockConfigService.get(key);
+        if (value === undefined) {
+            throw new Error(`Missing required mock configuration key: ${key}`);
+        }
+        return value;
     });
 };

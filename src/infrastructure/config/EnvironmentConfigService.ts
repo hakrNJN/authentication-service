@@ -134,6 +134,14 @@ export class EnvironmentConfigService implements IConfigService {
         return this.config[key] !== undefined;
     }
 
+    getOrThrow<T>(key: string): T {
+        const value = this.get<T>(key);
+        if (value === undefined) {
+            throw new Error(`Missing required configuration key: ${key}`);
+        }
+        return value;
+    }
+
     // Reload logic might need adjustment depending on how --env-file interacts
     // with runtime changes. For simplicity, keeping it as is.
     reloadConfig(): void {

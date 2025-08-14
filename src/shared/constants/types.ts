@@ -8,6 +8,7 @@ export const TYPES = {
     ConfigService: Symbol.for('ConfigService'),
     AuthService: Symbol.for('AuthService'), // Assuming an AuthService will exist
     AuthAdapter: Symbol.for('AuthAdapter'), // Interface for the IdP adapter
+    TokenBlacklistService: Symbol.for('TokenBlacklistService'),
     // Add other service/adapter interfaces as needed
 
     // Infrastructure Layer Implementations (Usually not injected directly by type, but useful for registration)

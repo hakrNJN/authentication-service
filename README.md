@@ -1,132 +1,165 @@
 # Authentication Service
 
-## Overview & Purpose
+This service is responsible for handling all user authentication processes, including registration, login, password management, and token management within the PBAC system.
 
-This microservice acts as the central hub for user authentication and related identity operations within the broader application architecture. Its primary responsibilities include verifying user credentials, issuing and refreshing access tokens, handling user registration and confirmation, and managing user-facing password flows (forgot/reset password).
+## Table of Contents
+- [Folder Structure](#folder-structure)
+- [Tech Stack](#tech-stack)
+- [Design Patterns and Principles](#design-patterns-and-principles)
+- [Purpose and Key Functionalities](#purpose-and-key-functionalities)
+- [API Endpoints](#api-endpoints)
+- [Dependencies](#dependencies)
+- [Environment Variables](#environment-variables)
+- [Local Setup Instructions](#local-setup-instructions)
 
-## Prerequisites
+## Folder Structure
+```
+authentication-service/
+├── src/
+│   ├── api/                  # API layer (controllers, DTOs, middlewares, routes)
+│   │   ├── controllers/      # Request handling logic
+│   │   ├── dtos/             # Data Transfer Objects for request/response validation
+│   │   ├── middlewares/      # Express middleware (e.g., authentication, validation)
+│   │   └── routes/           # Defines API endpoints and maps to controllers
+│   ├── application/          # Application layer (orchestrates domain logic, use cases)
+│   ├── domain/               # Domain layer (core business logic, entities, value objects)
+│   ├── infrastructure/       # Infrastructure layer (database interactions, external services, logging)
+│   ├── shared/               # Shared utilities, types, constants
+│   ├── app.ts                # Express application setup
+│   ├── container.ts          # Dependency Injection container setup (tsyringe)
+│   └── main.ts               # Application entry point
+├── tests/                    # Unit, Integration, and E2E tests
+├── .env.example              # Example environment variables
+├── Dockerfile                # Docker build instructions
+├── package.json              # Project dependencies and scripts
+├── pnpm-lock.yaml            # pnpm lock file
+└── README.md                 # This documentation
+```
 
-- Node.js (Check `package.json` for specific version requirements if any)
-- pnpm (Package manager used: `pnpm@10.9.0`)
+## Tech Stack
+- **Language:** TypeScript
+- **Runtime:** Node.js
+- **Web Framework:** Express.js
+- **Package Manager:** pnpm
+- **Authentication:** JSON Web Tokens (JWT), JWK to PEM conversion, AWS Cognito (via AWS SDK)
+- **Caching/Session Management:** Redis (via `ioredis`) for token blacklisting
+- **Dependency Injection:** tsyringe
+- **Validation:** Zod
+- **Logging:** Winston (with CloudWatch and Elasticsearch transports)
+- **Observability:** OpenTelemetry (for tracing and metrics), Prometheus (via `prom-client`)
+- **Resilience:** Opossum (Circuit Breaker)
 
-## Installation
+## Design Patterns and Principles
+- **Layered Architecture:** The service is structured into distinct layers (API, Application, Domain, Infrastructure) to promote separation of concerns and maintainability.
+- **Dependency Injection:** Utilizes `tsyringe` to manage dependencies, making the codebase more modular and testable.
+- **Circuit Breaker:** Implements the Circuit Breaker pattern using `opossum` to prevent cascading failures and improve system resilience.
+- **Observability:** Designed with observability in mind, integrating OpenTelemetry for distributed tracing and `prom-client` for Prometheus metrics.
+- **Token Blacklisting:** Employs Redis to manage a blacklist of invalidated tokens, enhancing security.
 
-1.  Clone the repository:
+## Purpose and Key Functionalities
+**Purpose:** To provide secure and efficient user authentication for the PBAC system.
+
+**Key Functionalities:**
+- **User Registration & Confirmation:** Allows new users to sign up and confirm their accounts.
+- **User Login:** Authenticates users and issues access tokens.
+- **Multi-Factor Authentication (MFA):** Supports MFA verification during login.
+- **Token Management:** Handles access token refreshing and invalidation (logout).
+- **Password Management:** Provides functionalities for forgotten, resetting, and changing passwords.
+- **User Information Retrieval:** Allows authenticated users to retrieve their profile information.
+- **System Monitoring:** Provides health check, server information, and Prometheus metrics endpoints for operational visibility.
+
+## API Endpoints
+All endpoints are typically prefixed with `/api/auth`.
+
+- `POST /signup`: Registers a new user.
+- `POST /confirm-signup`: Confirms a user's registration.
+- `POST /login`: Authenticates a user and returns tokens.
+- `POST /verify-mfa`: Verifies MFA code during login.
+- `POST /refresh-token`: Refreshes an expired access token.
+- `POST /forgot-password`: Initiates the password reset process.
+- `POST /reset-password`: Resets a user's password.
+- `POST /change-password`: Changes the authenticated user's password.
+- `GET /me`: Retrieves information about the authenticated user.
+- `POST /logout`: Invalidates the authenticated user's session/token.
+
+**System Endpoints (typically not requiring authentication):**
+- `GET /health`: Returns the health status of the service.
+- `GET /server-info`: Provides general information about the server and service.
+- `GET /metrics`: Exposes Prometheus-compatible metrics for monitoring.
+
+## Dependencies
+Key dependencies include:
+- `@aws-sdk/client-cognito-identity-provider`: For interacting with AWS Cognito.
+- `express`: Web framework.
+- `ioredis`: Redis client for token blacklisting.
+- `jsonwebtoken`, `jwk-to-pem`: For JWT handling.
+- `tsyringe`: Dependency injection container.
+- `zod`: For data validation.
+- `winston`: Logging library.
+- `@opentelemetry/*`: For distributed tracing and metrics.
+- `prom-client`: For Prometheus metrics.
+- `opossum`: For circuit breaker implementation.
+- `dotenv`: For environment variable management.
+
+## Environment Variables
+Configuration is managed via environment variables. A `.env.example` file is provided as a template.
+
+| Variable                  | Description                                          | Example Value       |
+|---------------------------|------------------------------------------------------|---------------------|
+| `NODE_ENV`                | Node.js environment (e.g., development, production). | `development`       |
+| `PORT`                    | Port on which the service will listen.               | `3000`              |
+| `LOG_LEVEL`               | Minimum logging level (e.g., info, debug, error).    | `debug`             |
+| `AWS_REGION`              | AWS region for services like Cognito.                | `asia-south-1`      |
+| `COGNITO_USER_POOL_ID`    | AWS Cognito User Pool ID.                            | `your-user-pool-id` |
+| `COGNITO_CLIENT_ID`       | AWS Cognito App Client ID.                           | `your-client-id`    |
+| `USE_REDIS_BLACKLIST`     | Whether to use Redis for token blacklisting.         | `true`              |
+| `REDIS_URL`               | URL for the Redis server.                            | `redis://localhost:6379` |
+
+## Local Setup Instructions
+
+To set up and run the Authentication Service locally, follow these steps:
+
+1.  **Prerequisites:**
+    *   Node.js (v20 or higher recommended)
+    *   pnpm (v8 or higher recommended)
+    *   Docker and Docker Compose
+
+2.  **Clone the Repository:**
     ```bash
     git clone <repository-url>
     cd authentication-service
     ```
-2.  Install dependencies:
+
+3.  **Install Dependencies:**
     ```bash
     pnpm install
     ```
 
-## Configuration
-
-1.  Copy the example environment file:
+4.  **Environment Configuration:**
+    Create a `.env` file in the root of the `authentication-service` directory by copying `.env.example` and filling in the appropriate values.
     ```bash
     cp .env.example .env
+    # Edit .env with your specific AWS credentials and Cognito details
     ```
-2.  Update the `.env` file with your specific configuration values (e.g., AWS credentials, Cognito details, DynamoDB endpoint). Refer to `config/default.yml` and `src/infrastructure/config/EnvironmentConfigService.ts` for required variables. Configuration is loaded using the Node.js `--env-file` flag.
 
-## Running the Application
+5.  **Run with Docker Compose (Recommended for local development):**
+    The `docker-compose.yml` in the project root orchestrates all services, including Redis.
+    Navigate to the project root (`E:\NodeJS\PBAC_Auth`) and run:
+    ```bash
+    docker compose up -d redis
+    ```
+    Then, from the `authentication-service` directory, start the service in development mode:
+    ```bash
+    pnpm run dev
+    ```
 
-### Development Mode
+6.  **Build and Run (Production-like):**
+    ```bash
+    pnpm run build
+    pnpm run start
+    ```
 
-Runs the application using `ts-node-dev` with file watching and hot-reloading. Uses `.env.example` for environment variables.
-
-```bash
-pnpm run dev
-```
-
-### Production Mode
-
-Builds the TypeScript code to JavaScript and runs the compiled code using Node.js. Requires a configured `.env` file.
-
-```bash
-pnpm run build
-pnpm run start
-```
-
-## Running Tests
-
-Execute the test suite using Jest:
-
-```bash
-pnpm run test
-```
-
-## Technology Stack
-
-- **Backend:** Node.js, TypeScript
-- **Web Framework:** Express.js
-- **Dependency Injection:** tsyringe
-- **Identity Provider (IdP):** AWS Cognito (abstracted via Adapter)
-- **Logging:** Winston (with conditional CloudWatch integration for production)
-- **Validation:** Zod (for API DTOs)
-- **Resilience:** opossum (Circuit Breaker pattern)
-- **Configuration:** Node.js `--env-file` flag for environment variables
-- **Package Manager:** pnpm
-- **Testing:** Jest, Supertest, `aws-sdk-client-mock`
-- **Linting/Formatting:** ESLint, Prettier
-
-## Architecture & Design
-
-- **Layered Architecture:** Strictly follows a layered approach separating concerns into:
-    - **API Layer:** Handles HTTP requests/responses, routing (Express), DTO validation (Zod), and middleware.
-    - **Application Layer:** Contains core business logic orchestration (Services), defines contracts for external dependencies (Interfaces/Ports).
-    - **Domain Layer:** Encapsulates core domain concepts and custom exceptions (e.g., AuthenticationError subtypes).
-    - **Infrastructure Layer:** Implements external concerns like IdP interaction (Cognito Adapter), logging (Winston), configuration loading, and resilience patterns.
-- **API First Design:** API contracts are defined upfront using DTOs and validated using middleware.
-- **Design Patterns:** Leverages several key patterns:
-    - **Dependency Injection (DI):** Managed by tsyringe for loose coupling and testability.
-    - **Adapter Pattern:** Used extensively (e.g., `IAuthAdapter`/`CognitoAuthAdapter`) to abstract the specific IdP, enabling provider agnosticism.
-    - **Service Layer:** Centralizes application logic.
-    - **Middleware Pattern:** Used within Express for request processing (validation, error handling, etc.).
-    - **Repository Pattern (Implied):** Although not heavily used yet, the structure supports adding repositories for data persistence.
-    - **Circuit Breaker:** Implemented using opossum via a helper function (`applyCircuitBreaker`) for resilient external calls.
-- **SOLID Principles:** The architecture promotes adherence to SOLID principles for maintainability and scalability.
-
-## Key Features Implemented
-
-- User Login (Password-based)
-- Access Token Refresh
-- User Signup & Confirmation
-- User Logout (Global Sign-Out)
-- User-Facing Password Management (Forgot Password, Reset Password)
-- Basic Server Health & Info Endpoints
-- Structured Logging (Console & CloudWatch)
-- Configuration via Environment Files
-- Centralized Error Handling
-- Input Validation (DTOs)
-- Circuit Breaker for IdP calls
-
-## Project Structure Overview
-
-```
-authentication-service/
-├── config/               # Application configuration files (e.g., default.yml)
-├── src/                  # Source code
-│   ├── api/              # API layer (Controllers, Routes, Middlewares, DTOs)
-│   ├── application/      # Application core logic (Services, Use Cases, Interfaces)
-│   ├── domain/           # Domain entities, value objects, exceptions
-│   ├── infrastructure/   # Infrastructure concerns (Adapters, Config, Logging, Persistence)
-│   ├── shared/           # Shared utilities, constants, types
-│   ├── app.ts            # Express application setup
-│   ├── container.ts      # Dependency injection container setup (tsyringe)
-│   └── main.ts           # Application entry point
-├── tests/                # Automated tests (unit, integration, e2e)
-├── .env.example          # Example environment variables
-├── .eslintrc.js          # ESLint configuration
-├── .gitignore            # Git ignore rules
-├── Dockerfile            # Docker configuration
-├── jest.config.js        # Jest test runner configuration
-├── package.json          # Project metadata and dependencies
-├── pnpm-lock.yaml        # pnpm lock file
-├── README.md             # This file
-└── tsconfig.json         # TypeScript compiler options
-```
-
-## Further Development
-
-_(Add details about potential future enhancements, contribution guidelines, etc.)_
+7.  **Running Tests:**
+    ```bash
+    pnpm test
+    ```

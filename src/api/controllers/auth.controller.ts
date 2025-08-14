@@ -55,10 +55,10 @@ export class AuthController {
             res.status(200).json({ message: 'Account confirmed successfully.' });
         } catch (error) { next(error); }
     };
-    logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    signOut = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const accessToken = (req as any).user.accessToken; // Get token from user object
-            await this.authService.logout(accessToken);
+            await this.authService.signOut(accessToken);
             res.status(204).send();
         } catch (error) { next(error); }
     };

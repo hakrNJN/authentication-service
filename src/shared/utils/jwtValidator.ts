@@ -1,5 +1,5 @@
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
-import { decode, verify } from 'jsonwebtoken';
+import { decode, verify, Algorithm } from 'jsonwebtoken';
 import jwkToPem from 'jwk-to-pem';
 import { IConfigService } from '../../application/interfaces/IConfigService';
 import { ILogger } from '../../application/interfaces/ILogger';
@@ -10,7 +10,7 @@ import { container } from 'tsyringe';
 interface Jwk {
     kid: string;
     alg: string;
-    kty: string;
+    kty: "RSA";
     e: string;
     n: string;
     use: string;
@@ -74,7 +74,7 @@ export class JwtValidator {
 
         try {
             const verifiedToken = verify(token, pem, {
-                algorithms: [jwk.alg], // Ensure algorithm matches
+                algorithms: [jwk.alg as Algorithm], // Ensure algorithm matches
                 issuer: `https://cognito-idp.${this.region}.amazonaws.com/${this.userPoolId}`,
                 audience: this.configService.getOrThrow('COGNITO_CLIENT_ID'), // Uncommented for audience validation
             });

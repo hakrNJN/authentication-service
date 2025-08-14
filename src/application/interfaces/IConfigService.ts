@@ -43,6 +43,8 @@ export interface IConfigService {
      * @returns True if the key exists, false otherwise.
      */
     has(key: string): boolean;
+
+    getOrThrow<T>(key: string): T;
     
 //  /**
 //      * Ensures that required configuration keys are present.

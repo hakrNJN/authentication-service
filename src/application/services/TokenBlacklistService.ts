@@ -18,10 +18,10 @@ export class TokenBlacklistService implements ITokenBlacklistService {
         @inject(TYPES.Logger) private logger: ILogger,
         @inject(TYPES.ConfigService) private configService: IConfigService
     ) {
-        this.useRedis = this.configService.getBoolean('USE_REDIS_BLACKLIST', false);
+        this.useRedis = this.configService.getBoolean('USE_REDIS_BLACKLIST') ?? false;
         if (this.useRedis) {
-            const redisUrl = this.configService.getOrThrow('REDIS_URL');
-            this.redisClient = new Redis(redisUrl);
+            const redisUrl = this.configService.getOrThrow<string>('REDIS_URL');
+            this.redisClient = new Redis(redisUrl as string);
             this.redisClient.on('connect', () => this.logger.info('Connected to Redis for token blacklist.'));
             this.redisClient.on('error', (err) => this.logger.error('Redis client error for token blacklist', err));
         } else {

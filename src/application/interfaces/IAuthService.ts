@@ -67,7 +67,7 @@ export interface IAuthService {
      * @returns A promise resolving upon successful logout.
      * @throws {AuthenticationError} If the token is invalid.
      */
-    logout(accessToken: string): Promise<void>;
+    signOut(accessToken: string): Promise<void>;
 
     /**
      * Handles initiating the forgot password flow for a user.
