@@ -65,8 +65,8 @@ export class NotFoundError extends BaseError {
  * Example: Error for authentication failures.
  */
 export class AuthenticationError extends BaseError {
-    constructor(message = 'Authentication Required') {
-        super('AuthenticationError', 401, message, true); // 401 Unauthorized
+    constructor(message = 'Authentication Required', statusCode: number = 401) {
+        super('AuthenticationError', statusCode, message, true); // 401 Unauthorized
     }
 }
 

@@ -63,10 +63,10 @@ describe('CognitoAuthAdapter', () => {
 
         // Set up the config
         mockConfigService.get.mockImplementation((key: string) => {
-            switch(key) {
+            switch (key) {
                 case 'AWS_REGION': return 'us-east-1';
                 case 'COGNITO_USER_POOL_ID': return 'us-east-1_testpool';
-                case 'COGNITO_CLIENT_ID': return 'test-client-id';
+                case 'COGNITO_CLIENT_ID': return 'testClientId123';
                 default: return undefined;
             }
         });
@@ -84,7 +84,7 @@ describe('CognitoAuthAdapter', () => {
     function mockResilientFunctions(adapter: any) {
         // Type the commands properly to match AWS SDK expectations
         const mockSend = <T>(command: T) => cognitoMock.send(command as any);
-        
+
         // Mock all resilient functions with proper command handling
         adapter.resilientInitiateAuth = (params: any) => mockSend(new InitiateAuthCommand(params));
         adapter.resilientGetUser = (params: any) => mockSend(new GetUserCommand(params));
@@ -511,6 +511,371 @@ describe('CognitoAuthAdapter', () => {
                     .rejects
                     .toThrow(NotFoundError);
             });
+        });
+    });
+
+    // Additional comprehensive test coverage
+    describe('getUserFromToken', () => {
+        const accessToken = 'valid-access-token';
+
+        it('should return user attributes successfully', async () => {
+            const mockUserResponse = {
+                Username: 'testuser',
+                UserAttributes: [
+                    { Name: 'sub', Value: 'user-sub-123' },
+                    { Name: 'email', Value: 'test@example.com' },
+                    { Name: 'name', Value: 'Test User' }
+                ]
+            };
+
+            cognitoMock.on(GetUserCommand).resolves(mockUserResponse);
+
+            const result = await adapter.getUserFromToken(accessToken);
+
+            expect(result).toEqual({
+                username: 'testuser',
+                sub: 'user-sub-123',
+                email: 'test@example.com',
+                name: 'Test User'
+            });
+        });
+
+        it('should handle user with minimal attributes', async () => {
+            const mockUserResponse = {
+                Username: 'testuser',
+                UserAttributes: [
+                    { Name: 'sub', Value: 'user-sub-123' }
+                ]
+            };
+
+            cognitoMock.on(GetUserCommand).resolves(mockUserResponse);
+
+            const result = await adapter.getUserFromToken(accessToken);
+
+            expect(result).toEqual({
+                username: 'testuser',
+                sub: 'user-sub-123'
+            });
+        });
+
+        it('should handle user with no attributes', async () => {
+            const mockUserResponse = {
+                Username: 'testuser',
+                UserAttributes: []
+            };
+
+            cognitoMock.on(GetUserCommand).resolves(mockUserResponse);
+
+            const result = await adapter.getUserFromToken(accessToken);
+
+            expect(result).toEqual({
+                username: 'testuser'
+            });
+        });
+
+        it('should throw InvalidTokenError when token is invalid', async () => {
+            cognitoMock.on(GetUserCommand).rejects(
+                new NotAuthorizedException({ message: 'Invalid access token', $metadata: {} })
+            );
+
+            await expect(adapter.getUserFromToken(accessToken))
+                .rejects
+                .toThrow(InvalidTokenError);
+        });
+    });
+
+    describe('changePassword', () => {
+        const accessToken = 'valid-access-token';
+        const oldPassword = 'OldPassword123!';
+        const newPassword = 'NewPassword123!';
+
+        it('should change password successfully', async () => {
+            cognitoMock.on(ChangePasswordCommand).resolves({});
+
+            await adapter.changePassword(accessToken, oldPassword, newPassword);
+
+            expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Password changed successfully'));
+        });
+
+        it('should throw AuthenticationError when old password is incorrect', async () => {
+            cognitoMock.on(ChangePasswordCommand).rejects(
+                new NotAuthorizedException({ message: 'Incorrect username or password', $metadata: {} })
+            );
+
+            await expect(adapter.changePassword(accessToken, 'wrongpassword', newPassword))
+                .rejects
+                .toThrow(AuthenticationError);
+        });
+
+        it('should throw InvalidTokenError when access token is invalid', async () => {
+            cognitoMock.on(ChangePasswordCommand).rejects(
+                new NotAuthorizedException({ message: 'Invalid access token', $metadata: {} })
+            );
+
+            await expect(adapter.changePassword('invalid-token', oldPassword, newPassword))
+                .rejects
+                .toThrow(InvalidTokenError);
+        });
+
+        it('should throw ValidationError when new password does not meet requirements', async () => {
+            cognitoMock.on(ChangePasswordCommand).rejects(
+                new InvalidPasswordException({ message: 'Password does not meet requirements', $metadata: {} })
+            );
+
+            await expect(adapter.changePassword(accessToken, oldPassword, 'weak'))
+                .rejects
+                .toThrow(ValidationError);
+        });
+    });
+
+    describe('respondToAuthChallenge', () => {
+        const username = 'testuser';
+        const session = 'test-session';
+        const challengeResponses = { SMS_MFA_CODE: '123456' };
+
+        it('should successfully respond to MFA challenge', async () => {
+            const mockAuthResult = {
+                AuthenticationResult: {
+                    AccessToken: 'access-token',
+                    RefreshToken: 'refresh-token',
+                    IdToken: 'id-token',
+                    ExpiresIn: 3600,
+                    TokenType: 'Bearer'
+                }
+            };
+
+            cognitoMock.on(RespondToAuthChallengeCommand).resolves(mockAuthResult);
+
+            const result = await adapter.respondToAuthChallenge(
+                username,
+                session,
+                ChallengeNameType.SMS_MFA,
+                challengeResponses
+            );
+
+            expect(result).toEqual({
+                accessToken: 'access-token',
+                refreshToken: 'refresh-token',
+                idToken: 'id-token',
+                expiresIn: 3600,
+                tokenType: 'Bearer'
+            });
+        });
+
+        it('should handle subsequent challenge', async () => {
+            const mockChallengeResponse = {
+                ChallengeName: ChallengeNameType.SOFTWARE_TOKEN_MFA,
+                Session: 'new-session',
+                ChallengeParameters: {}
+            };
+
+            cognitoMock.on(RespondToAuthChallengeCommand).resolves(mockChallengeResponse);
+
+            await expect(adapter.respondToAuthChallenge(
+                username,
+                session,
+                ChallengeNameType.SMS_MFA,
+                challengeResponses
+            )).rejects.toThrow(MfaRequiredError);
+        });
+
+        it('should throw AuthenticationError when challenge response is invalid', async () => {
+            cognitoMock.on(RespondToAuthChallengeCommand).rejects(
+                new CodeMismatchException({ message: 'Invalid verification code', $metadata: {} })
+            );
+
+            await expect(adapter.respondToAuthChallenge(
+                username,
+                session,
+                ChallengeNameType.SMS_MFA,
+                { SMS_MFA_CODE: 'wrong-code' }
+            )).rejects.toThrow(AuthenticationError);
+        });
+    });
+
+    describe('Edge Cases and Error Scenarios', () => {
+        it('should handle missing AuthenticationResult in successful auth', async () => {
+            cognitoMock.on(InitiateAuthCommand).resolves({});
+
+            await expect(adapter.authenticateUser('testuser', 'password'))
+                .rejects
+                .toThrow(BaseError);
+        });
+
+        it('should handle missing AuthenticationResult in token refresh', async () => {
+            cognitoMock.on(InitiateAuthCommand).resolves({});
+
+            await expect(adapter.refreshToken('refresh-token'))
+                .rejects
+                .toThrow(BaseError);
+        });
+
+        it('should handle signup with confirmed user', async () => {
+            const mockResponse = {
+                UserSub: 'user-sub-123',
+                UserConfirmed: true
+            };
+
+            cognitoMock.on(SignUpCommand).resolves(mockResponse);
+
+            const result = await adapter.signUp({
+                username: 'testuser',
+                password: 'Password123!',
+                attributes: { email: 'test@example.com' }
+            });
+
+            expect(result.userConfirmed).toBe(true);
+        });
+
+        it('should handle forgot password without code delivery details', async () => {
+            cognitoMock.on(ForgotPasswordCommand).resolves({});
+
+            const result = await adapter.initiateForgotPassword('testuser');
+
+            expect(result).toBeUndefined();
+        });
+
+        it('should handle refresh token without RefreshToken in response', async () => {
+            const mockAuthResult = {
+                AuthenticationResult: {
+                    AccessToken: 'new-access-token',
+                    ExpiresIn: 3600,
+                    TokenType: 'Bearer'
+                    // No RefreshToken
+                }
+            };
+
+            cognitoMock.on(InitiateAuthCommand).resolves(mockAuthResult);
+
+            const result = await adapter.refreshToken('refresh-token');
+
+            expect(result).toEqual({
+                accessToken: 'new-access-token',
+                expiresIn: 3600,
+                tokenType: 'Bearer'
+            });
+            expect(result.refreshToken).toBeUndefined();
+        });
+    });
+
+    describe('Logging Coverage', () => {
+        it('should log authentication attempts', async () => {
+            const mockAuthResult = {
+                AuthenticationResult: {
+                    AccessToken: 'access-token',
+                    RefreshToken: 'refresh-token',
+                    IdToken: 'id-token',
+                    ExpiresIn: 3600,
+                    TokenType: 'Bearer'
+                }
+            };
+
+            cognitoMock.on(InitiateAuthCommand).resolves(mockAuthResult);
+
+            await adapter.authenticateUser('testuser', 'password');
+
+            expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Attempting authentication'));
+            expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Authentication successful'));
+        });
+
+        it('should log signup attempts', async () => {
+            const mockResponse = {
+                UserSub: 'user-sub-123',
+                UserConfirmed: false
+            };
+
+            cognitoMock.on(SignUpCommand).resolves(mockResponse);
+
+            await adapter.signUp({
+                username: 'testuser',
+                password: 'Password123!',
+                attributes: { email: 'test@example.com' }
+            });
+
+            expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Attempting signup'));
+            expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('Signup successful'));
+        });
+
+        it('should log error scenarios', async () => {
+            cognitoMock.on(InitiateAuthCommand).rejects(
+                new NotAuthorizedException({ message: 'Invalid credentials', $metadata: {} })
+            );
+
+            await expect(adapter.authenticateUser('testuser', 'wrongpassword'))
+                .rejects
+                .toThrow();
+
+            expect(mockLogger.error).toHaveBeenCalled();
+        });
+    });
+
+    describe('Additional Error Types Coverage', () => {
+        it('should handle AliasExistsException', async () => {
+            const error = new Error('Email already exists');
+            error.name = 'AliasExistsException';
+
+            cognitoMock.on(SignUpCommand).rejects(error);
+
+            await expect(adapter.signUp({
+                username: 'testuser',
+                password: 'Password123!',
+                attributes: { email: 'existing@example.com' }
+            })).rejects.toThrow(ValidationError);
+        });
+
+        it('should handle CodeDeliveryFailureException', async () => {
+            const error = new Error('Failed to deliver code');
+            error.name = 'CodeDeliveryFailureException';
+
+            cognitoMock.on(ForgotPasswordCommand).rejects(error);
+
+            await expect(adapter.initiateForgotPassword('testuser'))
+                .rejects
+                .toThrow(BaseError);
+        });
+
+        it('should handle ForbiddenException', async () => {
+            const error = new Error('Operation forbidden');
+            error.name = 'ForbiddenException';
+
+            cognitoMock.on(GlobalSignOutCommand).rejects(error);
+
+            await expect(adapter.signOut('invalid-token'))
+                .rejects
+                .toThrow(InvalidTokenError);
+        });
+
+        it('should handle ResourceNotFoundException', async () => {
+            const error = new Error('Resource not found');
+            error.name = 'ResourceNotFoundException';
+
+            cognitoMock.on(InitiateAuthCommand).rejects(error);
+
+            await expect(adapter.authenticateUser('testuser', 'password'))
+                .rejects
+                .toThrow(NotFoundError);
+        });
+
+        it('should handle InternalErrorException', async () => {
+            const error = new Error('Internal server error');
+            error.name = 'InternalErrorException';
+
+            cognitoMock.on(InitiateAuthCommand).rejects(error);
+
+            await expect(adapter.authenticateUser('testuser', 'password'))
+                .rejects
+                .toThrow(BaseError);
+        });
+
+        it('should handle TooManyFailedAttemptsException', async () => {
+            const error = new Error('Too many failed attempts');
+            error.name = 'TooManyFailedAttemptsException';
+
+            cognitoMock.on(InitiateAuthCommand).rejects(error);
+
+            await expect(adapter.authenticateUser('testuser', 'password'))
+                .rejects
+                .toThrow(BaseError);
         });
     });
 });

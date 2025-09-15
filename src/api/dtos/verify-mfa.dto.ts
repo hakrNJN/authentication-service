@@ -13,7 +13,6 @@ const AllowedChallengeNames = z.enum([
  * Zod schema for validating MFA verification request payloads.
  */
 export const VerifyMfaSchema = z.object({
-    body: z.object({
         username: z.string({ required_error: 'Username is required' })
                      .min(1, 'Username cannot be empty'),
 
@@ -24,14 +23,15 @@ export const VerifyMfaSchema = z.object({
 
         // 'code' can be the MFA code (TOTP/SMS) or a JSON string for Passkey/FIDO2
         code: z.string({ required_error: 'MFA code or assertion response is required' })
-                 .min(1, 'MFA code/response cannot be empty'),
-    }),
+                 .min(1, 'MFA code/response cannot be empty')
+                 .regex(/^\d+$/, 'Code must be numeric'), // Enforce numeric for MFA code
+    
 });
 
 /**
  * TypeScript type inferred from the VerifyMfaSchema's body definition.
  */
-export type VerifyMfaDto = z.infer<typeof VerifyMfaSchema>['body'];
+export type VerifyMfaDto = z.infer<typeof VerifyMfaSchema>;
 
 /**
  * Explicit type alias for ChallengeNameType for clarity in service/controller.

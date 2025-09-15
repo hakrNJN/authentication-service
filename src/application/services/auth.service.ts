@@ -68,6 +68,9 @@ export class AuthService implements IAuthService {
             case ChallengeNameType.SOFTWARE_TOKEN_MFA:
                 responses = { SOFTWARE_TOKEN_MFA_CODE: code, USERNAME: username }; // Username might be needed
                 break;
+            case ChallengeNameType.NEW_PASSWORD_REQUIRED:
+                responses = { NEW_PASSWORD: code, USERNAME: username }; // For setting new password
+                break;
             case ChallengeNameType.DEVICE_PASSWORD_VERIFIER:
                 // For FIDO2/WebAuthn, the 'code' would be a JSON string containing the authenticator assertion response.
                 // We need to parse it and map it to the expected Cognito parameters.
@@ -134,7 +137,15 @@ export class AuthService implements IAuthService {
         if (!accessToken) {
             throw new ValidationError('Access token is required.');
         }
+
         try {
+            const decoded = decode(accessToken) as { jti?: string };
+            const tokenId = decoded?.jti || accessToken;
+
+            if (await this.tokenBlacklistService.isBlacklisted(tokenId)) {
+                throw new AuthenticationError('Token has been invalidated');
+            }
+
             const userInfo = await this.authAdapter.getUserFromToken(accessToken);
             this.logger.info('Get user info successful.');
             return userInfo;
@@ -195,11 +206,12 @@ export class AuthService implements IAuthService {
 
             // Decode the token to get its expiry and jti
             const decoded = decode(accessToken) as { exp?: number, jti?: string };
-            if (decoded && decoded.jti && decoded.exp) {
+            if (decoded && decoded.exp) {
+                const tokenId = decoded.jti || accessToken;
                 const expiresIn = decoded.exp - Math.floor(Date.now() / 1000); // Time until expiry in seconds
                 if (expiresIn > 0) {
-                    await this.tokenBlacklistService.addToBlacklist(decoded.jti, expiresIn);
-                    this.logger.info(`Access token ${decoded.jti} added to blacklist.`);
+                    await this.tokenBlacklistService.addToBlacklist(tokenId, expiresIn);
+                    this.logger.info(`Access token ${tokenId} added to blacklist.`);
                 }
             }
 

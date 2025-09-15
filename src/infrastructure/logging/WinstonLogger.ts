@@ -26,7 +26,7 @@ export class WinstonLogger implements ILogger {
         // Create base logger with console transport
         const logger = winston.createLogger({
             level: logLevel,
-            format: LogFormats.productionFormat, // Always use JSON format
+            format: nodeEnv === 'development' || nodeEnv === 'test' ? LogFormats.developmentFormat : LogFormats.productionFormat,
             transports: [
                 new winston.transports.Console({
                     level: logLevel

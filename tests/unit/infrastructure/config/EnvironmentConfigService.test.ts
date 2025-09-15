@@ -34,6 +34,9 @@ describe('EnvironmentConfigService', () => {
         AWS_REGION: 'us-east-1',
         COGNITO_USER_POOL_ID: 'test-pool',
         COGNITO_CLIENT_ID: 'test-client',
+        SHARED_SECRET: 'test-shared-secret',
+        REDIS_URL: 'redis://localhost:6379',
+        USE_REDIS_BLACKLIST: 'true',
     };
 
     beforeEach(() => {

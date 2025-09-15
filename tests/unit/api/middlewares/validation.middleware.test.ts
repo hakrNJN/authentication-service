@@ -22,9 +22,9 @@ describe('Validation Middleware', () => {
     });
 
     const TestSchema = z.object({
-        username: z.string().min(3),
-        email: z.string().email(),
-        age: z.number().min(18).optional()
+        username: z.string({ required_error: 'Username is required' }).min(3, 'Username must be at least 3 characters'),
+        email: z.string({ required_error: 'Email is required' }).email('Invalid email format'),
+        age: z.number({ required_error: 'Age is required' }).min(18, 'Must be at least 18 years old').optional()
     });
 
     it('should pass validation for valid data', async () => {
@@ -120,8 +120,8 @@ describe('Validation Middleware', () => {
 
         const error = nextFunction.mock.calls[0][0];
         expect(error).toBeInstanceOf(ValidationError);
-        expect(error.message).toContain('String must contain at least 3 character(s)');
-        expect(error.message).toContain('Invalid email');
-        expect(error.message).toContain('Number must be greater than or equal to 18');
+        expect(error.message).toContain('Username must be at least 3 characters');
+        expect(error.message).toContain('Invalid email format');
+        expect(error.message).toContain('Must be at least 18 years old');
     });
 });

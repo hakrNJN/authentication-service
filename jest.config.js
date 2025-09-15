@@ -18,4 +18,6 @@ module.exports = {
   clearMocks: true,
   restoreMocks: true,
   maxWorkers: 1, // Force running in a single process
+  forceExit: true, // Force Jest to exit after tests complete
+  detectOpenHandles: true, // Help detect what's keeping Jest open
 };

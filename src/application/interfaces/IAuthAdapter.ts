@@ -100,6 +100,8 @@ export interface IAuthAdapter {
      */
     initiateForgotPassword(username: string): Promise<CodeDeliveryDetailsType | undefined>;
 
+    
+
     /**
      * Confirms the forgot password flow using the code and sets a new password.
      * @param username - The user's identifier.

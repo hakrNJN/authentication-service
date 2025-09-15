@@ -4,7 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "cross-env SHARED_SECRET=test-shared-secret REDIS_URL=redis://192.168.2.252:6379 USE_REDIS_BLACKLIST=true jest",
+    "test:unit": "cross-env SHARED_SECRET=test-shared-secret REDIS_URL=redis://192.168.2.252:6379 USE_REDIS_BLACKLIST=true jest --testPathPattern=tests/unit",
+    "test:integration": "cross-env SHARED_SECRET=test-shared-secret REDIS_URL=redis://192.168.2.252:6379 USE_REDIS_BLACKLIST=true jest --testPathPattern=tests/integration",
+    "test:e2e": "cross-env SHARED_SECRET=test-shared-secret-e2e REDIS_URL=redis://192.168.2.252:6379 USE_REDIS_BLACKLIST=true jest --config jest.e2e.config.js --testPathPattern=tests/e2e",
+    "test:coverage": "cross-env SHARED_SECRET=test-shared-secret REDIS_URL=redis://192.168.2.252:6379 USE_REDIS_BLACKLIST=true jest --coverage --testPathPattern=tests/unit",
+    "test:integration:coverage": "cross-env SHARED_SECRET=test-shared-secret REDIS_URL=redis://192.168.2.252:6379 USE_REDIS_BLACKLIST=true jest --coverage --testPathPattern=tests/integration",
+    "test:e2e:coverage": "cross-env SHARED_SECRET=test-shared-secret-e2e REDIS_URL=redis://192.168.2.252:6379 USE_REDIS_BLACKLIST=true jest --coverage --config jest.e2e.config.js --testPathPattern=tests/e2e",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "start": "node --env-file=.env dist/main.js",
     "dev": "ts-node-dev --watch --respawn --transpile-only --env-file=.env.example src/main.ts",
     "build": "tsc"
@@ -61,6 +68,7 @@
     "@typescript-eslint/eslint-plugin": "^8.30.1",
     "@typescript-eslint/parser": "^8.30.1",
     "aws-sdk-client-mock": "^4.1.0",
+    "cross-env": "^10.0.0",
     "eslint": "^9.24.0",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6",

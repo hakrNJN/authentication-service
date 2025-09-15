@@ -17,6 +17,9 @@ export function authGuardMiddleware() {
         }
 
         const token = authHeader.split(' ')[1];
+        if (!token || token.trim() === '') {
+            return next(new AuthenticationError('Authorization header missing or invalid'));
+        }
 
         try {
             const userInfo = await authService.getUserInfo(token);

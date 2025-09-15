@@ -1,7 +1,7 @@
 import { ErrorRequestHandler } from 'express';
 import { IConfigService } from '../../application/interfaces/IConfigService';
 import { ILogger } from '../../application/interfaces/ILogger';
-import { AuthenticationError, InvalidCredentialsError, ValidationError } from '../../domain';
+import { AuthenticationError, InvalidCredentialsError, MfaRequiredError, ValidationError } from '../../domain';
 import { BaseError } from '../../shared/errors/BaseError';
 
 /**
@@ -19,9 +19,9 @@ export const createErrorMiddleware = (
     return (err: Error | string, req, res, next) => {
         // If headers already sent, delegate to default Express error handler
         if (res.headersSent) {
-            logger.warn('Error occurred after headers were sent, delegating to default handler.', { 
+            logger.warn('Error occurred after headers were sent, delegating to default handler.', {
                 errorName: err instanceof Error ? err.name : typeof err,
-                path: req.originalUrl 
+                path: req.originalUrl
             });
             return next(err);
         }
@@ -42,19 +42,33 @@ export const createErrorMiddleware = (
         let statusCode = 500;
         if (error instanceof ValidationError) {
             statusCode = 400;
-        } else if (error instanceof InvalidCredentialsError || error instanceof AuthenticationError) {
+        } else if (error instanceof InvalidCredentialsError) {
+            statusCode = 401;
+        } else if (error instanceof MfaRequiredError) {
+            statusCode = 401;  // MFA challenges should return 401
+        } else if (error instanceof AuthenticationError) {
             statusCode = 401;
         } else if (error instanceof BaseError) {
-            statusCode = error.statusCode;
+            statusCode = error.statusCode || (error.name === 'NotFoundError' ? 404 : 500);
         }
 
+        logger.debug(`Error Middleware - Processing error: ${error.name}, Message: ${error.message}, Determined Status Code: ${statusCode}`);
+        logger.debug(`Error Middleware - Error instance: ${JSON.stringify(error)}`);
+
         // Prepare response
-        const response = {
+        const response: any = {
             status: 'error',
             name: isDevelopment ? error.name : (statusCode === 500 ? 'InternalServerError' : error.name),
             message: isDevelopment || statusCode !== 500 ? error.message : 'An unexpected error occurred',
             ...(isDevelopment && error.stack && { stack: error.stack })
         };
+
+        // Add special properties for MfaRequiredError
+        if (error instanceof MfaRequiredError) {
+            response.session = error.session;
+            response.challengeName = error.challengeName;
+            response.challengeParameters = error.challengeParameters;
+        }
 
         res.status(statusCode).json(response);
     };

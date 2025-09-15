@@ -57,7 +57,10 @@ export class AuthController {
     };
     signOut = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const accessToken = (req as any).user.accessToken; // Get token from user object
+            const accessToken = (req as any).user?.accessToken; // Safely get token from user object
+            if (!accessToken) {
+                throw new AuthenticationError('Access token missing from authenticated request.');
+            }
             await this.authService.signOut(accessToken);
             res.status(204).send();
         } catch (error) { next(error); }
