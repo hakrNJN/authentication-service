@@ -1,0 +1,52 @@
+FAIL tests/integration/factory.integration.test.ts
+  ΓùÅ Test suite failed to run
+
+    tests/integration/factory.integration.test.ts:5:37 - error TS2307: Cannot find module '../../src/infrastructure/auth/strategies/CognitoAuthStrategy' or its corresponding type declarations.
+
+    5 import { CognitoAuthStrategy } from '../../src/infrastructure/auth/strategies/CognitoAuthStrategy';
+                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests/integration/factory.integration.test.ts:6:33 - error TS2307: Cannot find module '../../src/infrastructure/auth/strategies/Auth0Strategy' or its corresponding type declarations.
+
+    6 import { AuthOneStrategy } from '../../src/infrastructure/auth/strategies/Auth0Strategy';
+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests/integration/factory.integration.test.ts:7:34 - error TS2307: Cannot find module '../../src/infrastructure/auth/strategies/FirebaseStrategy' or its corresponding type declarations.
+
+    7 import { FirebaseStrategy } from '../../src/infrastructure/auth/strategies/FirebaseStrategy';
+                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests/integration/factory.integration.test.ts:10:10 - error TS2305: Module '"../../src/shared/constants/types"' has no exported member 'AuthProviderType'.
+
+    10 import { AuthProviderType } from '../../src/shared/constants/types';
+                ~~~~~~~~~~~~~~~~
+    tests/integration/factory.integration.test.ts:32:34 - error TS2551: Property 'createStrategy' does not exist on type 'AuthStrategyFactory'. Did you mean 'getStrategy'?
+
+    32         const strategy = factory.createStrategy();
+                                        ~~~~~~~~~~~~~~
+
+      src/infrastructure/factories/AuthStrategyFactory.ts:21:12
+        21     public getStrategy(): IAuthStrategy {
+                      ~~~~~~~~~~~
+        'getStrategy' is declared here.
+    tests/integration/factory.integration.test.ts:42:34 - error TS2551: Property 'createStrategy' does not exist on type 'AuthStrategyFactory'. Did you mean 'getStrategy'?
+
+    42         const strategy = factory.createStrategy();
+                                        ~~~~~~~~~~~~~~
+
+      src/infrastructure/factories/AuthStrategyFactory.ts:21:12
+        21     public getStrategy(): IAuthStrategy {
+                      ~~~~~~~~~~~
+        'getStrategy' is declared here.
+    tests/integration/factory.integration.test.ts:52:34 - error TS2551: Property 'createStrategy' does not exist on type 'AuthStrategyFactory'. Did you mean 'getStrategy'?
+
+    52         const strategy = factory.createStrategy();
+                                        ~~~~~~~~~~~~~~
+
+      src/infrastructure/factories/AuthStrategyFactory.ts:21:12
+        21     public getStrategy(): IAuthStrategy {
+                      ~~~~~~~~~~~
+        'getStrategy' is declared here.
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        7.193 s
+Ran all test suites matching /tests\\integration\\factory.integration.test.ts/i.

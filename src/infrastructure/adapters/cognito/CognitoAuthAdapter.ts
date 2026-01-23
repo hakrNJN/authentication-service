@@ -91,7 +91,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
     ) {
         const region = this.configService.get<string>('AWS_REGION');
         this.userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID') || '';
-        this.clientId = this.configService.get<string>('COGNITO_CLIENT_ID')|| '';
+        this.clientId = this.configService.get<string>('COGNITO_CLIENT_ID') || '';
 
         // Use || '' only if empty strings are valid fallback defaults, otherwise let it be undefined and fail the check
         if (!region || !this.userPoolId || !this.clientId) {
@@ -128,7 +128,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
             AuthParameters: { USERNAME: username, PASSWORD: password },
         };
         try {
-           const response: InitiateAuthCommandOutput = await this.resilientInitiateAuth(params);
+            const response: InitiateAuthCommandOutput = await this.resilientInitiateAuth(params);
 
             if (response.AuthenticationResult) {
                 this.logger.info(`Authentication successful for user: ${username}`);
@@ -140,7 +140,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
                         throw new PasswordResetRequiredError();
                     case ChallengeNameType.SOFTWARE_TOKEN_MFA:
                     case ChallengeNameType.SMS_MFA:
-                        // Add other MFA types as needed
+                    // Add other MFA types as needed
                     case ChallengeNameType.MFA_SETUP: // Ensure MFA_SETUP is handled if used
                         if (!response.Session) {
                             this.logger.error(`MFA challenge received for ${username} but session is missing.`);
@@ -257,7 +257,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
             return attributes;
         } catch (error: any) {
             this.handleCognitoError(error, 'Failed to get user from token');
-             // Note: The line below is unreachable because handleCognitoError always throws.
+            // Note: The line below is unreachable because handleCognitoError always throws.
             // throw new AuthenticationError('Failed to get user from token due to an unexpected error.');
         }
     }
@@ -307,7 +307,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
             };
         } catch (error: any) {
             this.handleCognitoError(error, `Signup failed for username: ${details.username}`);
-             // Note: The line below is unreachable because handleCognitoError always throws.
+            // Note: The line below is unreachable because handleCognitoError always throws.
             // throw new BaseError('SignUpError', 500, 'Signup failed due to an unexpected error.');
         }
     }
@@ -324,7 +324,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
             this.logger.info(`Signup confirmed successfully for username: ${username}`);
         } catch (error: any) {
             this.handleCognitoError(error, `Signup confirmation failed for username: ${username}`);
-             // Note: The line below is unreachable because handleCognitoError always throws.
+            // Note: The line below is unreachable because handleCognitoError always throws.
             // throw new AuthenticationError('Signup confirmation failed due to an unexpected error.');
         }
     }
@@ -339,7 +339,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
             this.logger.info(`Global sign out successful.`);
         } catch (error: any) {
             this.handleCognitoError(error, 'Global sign out failed');
-             // Note: The line below is unreachable because handleCognitoError always throws.
+            // Note: The line below is unreachable because handleCognitoError always throws.
             // throw new AuthenticationError('Sign out failed due to an unexpected error.');
         }
     }
@@ -356,7 +356,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
             return response.CodeDeliveryDetails;
         } catch (error: any) {
             this.handleCognitoError(error, `Forgot password initiation failed for ${username}`);
-             // Note: The line below is unreachable because handleCognitoError always throws.
+            // Note: The line below is unreachable because handleCognitoError always throws.
             // throw new BaseError('ForgotPasswordError', 500, 'Forgot password initiation failed unexpectedly.');
         }
     }
@@ -392,8 +392,8 @@ export class CognitoAuthAdapter implements IAuthAdapter {
         } catch (error: any) {
             // Specific check for incorrect old password *before* generic handling
             if (error instanceof NotAuthorizedException && error.message?.toLowerCase().includes('incorrect username or password')) {
-                 this.logger.warn(`Password change failed for user: Incorrect previous password provided.`);
-                 throw new AuthenticationError('Incorrect previous password provided.');
+                this.logger.warn(`Password change failed for user: Incorrect previous password provided.`);
+                throw new AuthenticationError('Incorrect previous password provided.');
             }
             // Let generic handler manage other NotAuthorizedException (e.g., invalid token) and other errors
             this.handleCognitoError(error, `Password change failed`);
@@ -406,7 +406,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
         this.logger.info(`Initiating admin password reset for user: ${username}`);
         const params: AdminResetUserPasswordCommandInput = { UserPoolId: this.userPoolId, Username: username };
         try {
-             // Use resilient wrapper
+            // Use resilient wrapper
             await this.resilientAdminResetUserPassword(params);
             this.logger.info(`Admin password reset initiated successfully for user: ${username}`);
         } catch (error: any) {
@@ -467,7 +467,7 @@ export class CognitoAuthAdapter implements IAuthAdapter {
         switch (errorName) {
             case NotAuthorizedException.name:
                 // Check message for token-related errors first
-                if (error.message?.toLowerCase().includes('token') || 
+                if (error.message?.toLowerCase().includes('token') ||
                     contextMessage.toLowerCase().includes('token')) {
                     throw new InvalidTokenError(error.message || 'Invalid token');
                 }
@@ -538,6 +538,17 @@ export class CognitoAuthAdapter implements IAuthAdapter {
                     502, // Or 500/503 depending on context
                     'Identity provider internal error',
                     false // Typically not operational from caller's perspective
+                );
+
+            case 'NetworkingError':
+            case 'TimeoutError':
+                // AWS SDK v3 often uses these names for network issues
+                this.logger.warn(`Cognito network error: ${errorName}`, error);
+                throw new BaseError(
+                    'IdPNetworkError',
+                    503,
+                    'Identity provider unavailable due to network issue',
+                    true // Retryable
                 );
 
             default:

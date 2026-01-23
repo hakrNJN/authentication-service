@@ -10,6 +10,22 @@ import { container } from 'tsyringe';
 import { MockCognitoAdapter } from './setup/mockCognitoAdapter';
 import { TYPES } from '../../src/shared/constants/types';
 import { IAuthAdapter } from '../../src/application/interfaces/IAuthAdapter';
+import { ILogger } from '../../src/application/interfaces/ILogger';
+
+class MockLogger implements ILogger {
+  debug(message: string, ...args: any[]): void {
+    console.debug(`[DEBUG] ${message}`, ...args);
+  }
+  info(message: string, ...args: any[]): void {
+    console.info(`[INFO] ${message}`, ...args);
+  }
+  warn(message: string, ...args: any[]): void {
+    console.warn(`[WARN] ${message}`, ...args);
+  }
+  error(message: string, ...args: any[]): void {
+    console.error(`[ERROR] ${message}`, ...args);
+  }
+}
 
 describe('Test Route E2E', () => {
   let app: Express & { shutdown?: () => Promise<void> };
@@ -17,7 +33,8 @@ describe('Test Route E2E', () => {
   beforeAll(async () => {
     // Use mock cognito adapter
     container.clearInstances();
-    container.registerInstance<IAuthAdapter>(TYPES.AuthAdapter, new MockCognitoAdapter());
+    const mockLogger = new MockLogger(); // Instantiate mock logger
+    container.registerInstance<IAuthAdapter>(TYPES.AuthAdapter, new MockCognitoAdapter(mockLogger)); // Pass mock logger
     
     // Create app instance
     app = createApp();

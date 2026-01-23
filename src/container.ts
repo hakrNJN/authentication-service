@@ -27,8 +27,27 @@ container.registerSingleton<IConfigService>(TYPES.ConfigService, EnvironmentConf
 
 // --- Register Adapters (Singletons usually appropriate) ---
 
-// Cognito Adapter Implementation for IAuthAdapter interface
-container.registerSingleton<IAuthAdapter>(TYPES.AuthAdapter, CognitoAuthAdapter);
+// Universal Auth Strategy
+import { CognitoAuthStrategy } from './infrastructure/adapters/cognito/CognitoAuthStrategy';
+import { Auth0Strategy } from './infrastructure/adapters/auth0/Auth0Strategy';
+import { FirebaseStrategy } from './infrastructure/adapters/firebase/FirebaseStrategy';
+import { OktaStrategy } from './infrastructure/adapters/okta/OktaStrategy';
+import { AuthStrategyFactory } from './infrastructure/factories/AuthStrategyFactory';
+
+// Register Factory
+container.registerSingleton(AuthStrategyFactory);
+// Register Concrete Strategies
+container.registerSingleton(CognitoAuthStrategy);
+container.registerSingleton(Auth0Strategy);
+container.registerSingleton(FirebaseStrategy);
+container.registerSingleton(OktaStrategy);
+
+// Register TYPES.AuthStrategy using the Factory
+container.register(TYPES.AuthStrategy, {
+    useFactory: (c) => {
+        return c.resolve(AuthStrategyFactory).getStrategy();
+    }
+});
 
 // --- Register Application Services (Scope depends on need - Singleton or Transient) ---
 

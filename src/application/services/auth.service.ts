@@ -1,11 +1,10 @@
 import { inject, injectable } from 'tsyringe';
-import { AuthTokens, IAuthAdapter, SignUpDetails, SignUpResult } from '../interfaces/IAuthAdapter';
+import { AuthTokens, SignUpDetails, SignUpResult } from '../interfaces/IAuthAdapter';
+import { IAuthStrategy } from '../interfaces/IAuthStrategy';
 import { IAuthService } from '../interfaces/IAuthService';
 import { IConfigService } from '../interfaces/IConfigService';
 import { ILogger } from '../interfaces/ILogger';
-// import { ITokenService } from '../interfaces/ITokenService'; // Uncomment if using custom tokens
 import { TYPES } from '../../shared/constants/types';
-// Import specific domain errors via barrel file
 import { ChallengeNameType, CodeDeliveryDetailsType, LimitExceededException } from '@aws-sdk/client-cognito-identity-provider';
 import { AuthenticationError, MfaRequiredError, ValidationError } from '../../domain';
 import { ITokenBlacklistService } from '../interfaces/ITokenBlacklistService';
@@ -15,14 +14,12 @@ import { decode } from 'jsonwebtoken';
 @injectable()
 export class AuthService implements IAuthService {
 
-    // Note: Resilience wrappers are now applied within the CognitoAuthAdapter
 
     constructor(
         @inject(TYPES.Logger) private logger: ILogger,
         @inject(TYPES.ConfigService) private configService: IConfigService,
-        @inject(TYPES.AuthAdapter) private authAdapter: IAuthAdapter,
+        @inject(TYPES.AuthStrategy) private authStrategy: IAuthStrategy,
         @inject(TYPES.TokenBlacklistService) private tokenBlacklistService: ITokenBlacklistService
-        // @inject(TYPES.TokenService) private tokenService: ITokenService // Uncomment if needed
     ) {
         this.logger.info('AuthService initialized.');
     }
@@ -33,7 +30,7 @@ export class AuthService implements IAuthService {
             throw new ValidationError('Username and password are required.');
         }
         try {
-            const tokens = await this.authAdapter.authenticateUser(username, password);
+            const tokens = await this.authStrategy.login(username, password);
             this.logger.info(`Login successful for user: ${username}`);
             return tokens;
         } catch (error: any) {
@@ -99,7 +96,7 @@ export class AuthService implements IAuthService {
         }
 
         try {
-            const tokens = await this.authAdapter.respondToAuthChallenge(username, session, challengeName, responses);
+            const tokens = await this.authStrategy.respondToAuthChallenge(username, session, challengeName, responses);
             this.logger.info(`MFA verification successful for user: ${username}`);
             return tokens;
         } catch (error: any) {
@@ -120,7 +117,7 @@ export class AuthService implements IAuthService {
             throw new ValidationError('Refresh token is required.');
         }
         try {
-            const tokens = await this.authAdapter.refreshToken(refreshToken);
+            const tokens = await this.authStrategy.refreshToken(refreshToken);
             this.logger.info('Token refresh successful.');
             return tokens;
         } catch (error: any) {
@@ -146,7 +143,7 @@ export class AuthService implements IAuthService {
                 throw new AuthenticationError('Token has been invalidated');
             }
 
-            const userInfo = await this.authAdapter.getUserFromToken(accessToken);
+            const userInfo = await this.authStrategy.getUserFromToken(accessToken);
             this.logger.info('Get user info successful.');
             return userInfo;
         } catch (error: any) {
@@ -166,7 +163,7 @@ export class AuthService implements IAuthService {
             throw new ValidationError('Username, password, and email attribute are required for signup.');
         }
         try {
-            const result = await this.authAdapter.signUp(details);
+            const result = await this.authStrategy.signUp(details);
             this.logger.info(`Signup successful for ${details.username}. Confirmation needed: ${!result.userConfirmed}`);
             // Potentially trigger post-signup actions here (e.g., add to default group) if needed
             return result;
@@ -185,7 +182,7 @@ export class AuthService implements IAuthService {
             throw new ValidationError('Username and confirmation code are required.');
         }
         try {
-            await this.authAdapter.confirmSignUp(username, confirmationCode);
+            await this.authStrategy.confirmSignUp(username, confirmationCode);
             this.logger.info(`Signup confirmed for: ${username}`);
         } catch (error: any) {
             this.logger.error(`Signup confirmation failed for ${username}: ${error.message}`, error);
@@ -202,7 +199,7 @@ export class AuthService implements IAuthService {
             throw new ValidationError('Access token is required for logout.');
         }
         try {
-            await this.authAdapter.signOut(accessToken);
+            await this.authStrategy.signOut(accessToken);
 
             // Decode the token to get its expiry and jti
             const decoded = decode(accessToken) as { exp?: number, jti?: string };
@@ -234,7 +231,7 @@ export class AuthService implements IAuthService {
             throw new ValidationError('Username is required to initiate password reset.');
         }
         try {
-            const deliveryDetails = await this.authAdapter.initiateForgotPassword(username);
+            const deliveryDetails = await this.authStrategy.initiateForgotPassword(username);
             this.logger.info(`Forgot password initiated for ${username}.`);
             return deliveryDetails; // Return details (e.g., where code was sent)
         } catch (error: any) {
@@ -245,18 +242,22 @@ export class AuthService implements IAuthService {
     }
 
     async confirmForgotPassword(username: string, confirmationCode: string, newPassword: string): Promise<void> {
-        this.logger.info(`Confirming forgot password for user: ${username}`);
+        this.logger.debug(`Attempting to confirm forgot password for user: ${username}`);
+        this.logger.debug(`Confirmation code: ${confirmationCode}`);
+        // Do not log newPassword for security reasons
+
         if (!username || !confirmationCode || !newPassword) {
             throw new ValidationError('Username, confirmation code, and new password are required.');
         }
-        // Add password policy validation here if needed (beyond Cognito's policy)
+        // Add password policy validation here if needed (beyond Cognito\'s policy)
         try {
-            await this.authAdapter.confirmForgotPassword(username, confirmationCode, newPassword);
-            this.logger.info(`Password reset successfully for user: ${username}`);
+            await this.authStrategy.confirmForgotPassword(username, confirmationCode, newPassword);
+            this.logger.debug(`Successfully confirmed forgot password for user: ${username}`);
         } catch (error: any) {
-            this.logger.error(`Confirm forgot password failed for ${username}: ${error.message}`, error);
-            if (error instanceof AuthenticationError || error instanceof ValidationError || error instanceof LimitExceededException) throw error; // Re-throw known operational errors
-            throw new BaseError('ConfirmForgotPasswordError', 500, `Password reset confirmation failed: ${error.message || 'An unexpected error occurred'}`);
+            this.logger.error(`Error during confirmForgotPassword for user ${username}:`, error);
+            // The adapter should already be throwing application-specific errors.
+            // Re-throw them directly.
+            throw error;
         }
     }
 
@@ -270,7 +271,7 @@ export class AuthService implements IAuthService {
         }
         // Add password policy validation here if needed (beyond Cognito's policy)
         try {
-            await this.authAdapter.changePassword(accessToken, oldPassword, newPassword);
+            await this.authStrategy.changePassword(accessToken, oldPassword, newPassword);
             this.logger.info(`Password changed successfully for the user.`);
         } catch (error: any) {
             this.logger.error(`Password change failed: ${error.message}`, error);

@@ -1,7 +1,9 @@
 import { ChallengeNameType, CodeDeliveryDetailsType } from '@aws-sdk/client-cognito-identity-provider';
-import { injectable } from 'tsyringe';
+import { injectable, inject } from 'tsyringe';
 import { AuthTokens, IAuthAdapter, SignUpResult } from '../../../src/application/interfaces/IAuthAdapter';
-import { ValidationError, NotFoundError, AuthenticationError } from '../../../src/shared/errors/BaseError';
+import { AuthenticationError, NotFoundError, ValidationError } from '../../../src/shared/errors/BaseError';
+import { ILogger } from '../../../src/application/interfaces/ILogger';
+import { TYPES } from '../../../src/shared/constants/types';
 
 @injectable()
 export class MockCognitoAdapter implements IAuthAdapter {
@@ -12,7 +14,7 @@ export class MockCognitoAdapter implements IAuthAdapter {
   private clientId: string;
   private userPoolId: string;
 
-  constructor() {
+  constructor(@inject(TYPES.Logger) private logger: ILogger) {
     this.clientId = process.env.COGNITO_CLIENT_ID || 'testClientId123';
     this.userPoolId = process.env.COGNITO_USER_POOL_ID || 'test-user-pool-id';
 
@@ -20,6 +22,7 @@ export class MockCognitoAdapter implements IAuthAdapter {
     if (!this.isValidClientId(this.clientId)) {
       throw new ValidationError('Invalid client ID configuration');
     }
+    this.logger.info('MockCognitoAdapter initialized.');
   }
 
   private isValidClientId(clientId: string): boolean {
@@ -28,8 +31,10 @@ export class MockCognitoAdapter implements IAuthAdapter {
   }
 
   async signUp(details: { username: string; password: string; attributes: Record<string, string> }): Promise<SignUpResult> {
+    this.logger.debug(`MockCognitoAdapter: signUp called for username: ${details.username}`);
     const { username, password, attributes } = details;
     if (this.users.has(username)) {
+      this.logger.warn(`MockCognitoAdapter: signUp failed, username already exists: ${username}`);
       throw new ValidationError('Username already exists');
     }
 
@@ -41,9 +46,11 @@ export class MockCognitoAdapter implements IAuthAdapter {
       userSub,
       confirmed: false
     });
+    this.logger.debug(`MockCognitoAdapter: User ${username} added to internal map. Current users: ${Array.from(this.users.keys())}`);
 
     // Generate mock confirmation code
     this.confirmationCodes.set(username, '123456');
+    this.logger.debug(`MockCognitoAdapter: Confirmation code set for ${username}.`);
 
     return {
       userSub,
@@ -52,18 +59,23 @@ export class MockCognitoAdapter implements IAuthAdapter {
   }
 
   async confirmSignUp(username: string, confirmationCode: string): Promise<void> {
+    this.logger.debug(`MockCognitoAdapter: confirmSignUp called for username: ${username}, code: ${confirmationCode}`);
     const user = this.users.get(username);
     if (!user) {
+      this.logger.warn(`MockCognitoAdapter: confirmSignUp failed, user not found: ${username}`);
       throw new NotFoundError('User');
     }
+    this.logger.debug(`MockCognitoAdapter: User found for confirmSignUp: ${username}, confirmed status: ${user.confirmed}`);
 
     const expectedCode = this.confirmationCodes.get(username);
     if (confirmationCode !== expectedCode) {
+      this.logger.warn(`MockCognitoAdapter: confirmSignUp failed, invalid code for ${username}. Expected: ${expectedCode}, Received: ${confirmationCode}`);
       throw new ValidationError('Invalid verification code');
     }
 
     user.confirmed = true;
     this.confirmationCodes.delete(username);
+    this.logger.debug(`MockCognitoAdapter: User ${username} confirmed. Confirmation code deleted. Current users: ${Array.from(this.users.keys())}`);
   }
 
   async authenticateUser(username: string, password: string): Promise<AuthTokens> {
@@ -155,33 +167,74 @@ export class MockCognitoAdapter implements IAuthAdapter {
     // In real implementation, this would invalidate the token
   }
 
-  
+
 
   async initiateForgotPassword(username: string): Promise<CodeDeliveryDetailsType | undefined> {
-    return undefined;
+    this.logger.debug(`MockCognitoAdapter: initiateForgotPassword called for username: ${username}`);
+    const user = this.users.get(username);
+
+    // If user does not exist, we can't initiate a password reset.
+    if (!user) {
+      this.logger.info(`MockCognitoAdapter: initiateForgotPassword - User ${username} not found. Returning undefined to prevent enumeration.`);
+      return undefined;
+    }
+
+    // Generate a mock confirmation code and track the request
+    this.confirmationCodes.set(username, '123456');
+    this.forgotPasswordRequests.set(username, Date.now());
+    this.logger.debug(`MockCognitoAdapter: Forgot password request initiated for ${username}. Code set. Current forgotPasswordRequests: ${Array.from(this.forgotPasswordRequests.keys())}`);
+
+
+    // Simulate code delivery details
+    return {
+      AttributeName: 'email',
+      DeliveryMedium: 'EMAIL',
+      Destination: user.attributes.email
+    };
   }
 
   async confirmForgotPassword(username: string, confirmationCode: string, newPassword: string): Promise<void> {
+    this.logger.debug(`MockCognitoAdapter: confirmForgotPassword called for username: ${username}, code: ${confirmationCode}`);
     const user = this.users.get(username);
-    if (!user) {
-      // For security reasons, don't throw an error if the user is not found.
-      // This prevents user enumeration attacks.
-      return;
+    const storedCode = this.confirmationCodes.get(username);
+    this.logger.debug(`MockCognitoAdapter: confirmForgotPassword - User exists: ${!!user}, Stored code exists: ${!!storedCode}, Forgot password request exists: ${this.forgotPasswordRequests.has(username)}`);
+
+
+    // For security reasons, check if there was a password reset request initiated
+    if (!storedCode) {
+      this.logger.warn(`MockCognitoAdapter: confirmForgotPassword failed - No stored code for ${username}.`);
+      throw new ValidationError('No password reset request was initiated for this user');
     }
 
-    const storedCode = this.confirmationCodes.get(username);
-    if (!storedCode || confirmationCode !== storedCode) {
-      throw new AuthenticationError('Invalid verification code provided, please try again.');
+    // For testing purposes, always accept '123456' as valid
+    if (confirmationCode !== storedCode) {
+      this.logger.warn(`MockCognitoAdapter: confirmForgotPassword failed - Invalid code for ${username}. Expected: ${storedCode}, Received: ${confirmationCode}`);
+      throw new ValidationError('Invalid verification code provided, please try again.');
+    }
+
+    // Verify we have a pending forgot password request
+    if (!this.forgotPasswordRequests.has(username)) {
+      this.logger.warn(`MockCognitoAdapter: confirmForgotPassword failed - No pending forgot password request for ${username}.`);
+      throw new ValidationError('Password reset request has expired or was never initiated');
+    }
+
+    // At this point we can validate the user exists since we have a valid code
+    if (!user) {
+      this.logger.error(`MockCognitoAdapter: confirmForgotPassword failed - User ${username} not found in internal map despite valid code and request.`);
+      throw new ValidationError('User not found');
     }
 
     // Validate password complexity
     if (!this.validatePassword(newPassword)) {
+      this.logger.warn(`MockCognitoAdapter: confirmForgotPassword failed - New password for ${username} does not meet complexity requirements.`);
       throw new ValidationError('Password does not meet complexity requirements');
     }
 
+    // Update password and clean up
     user.password = newPassword;
     this.confirmationCodes.delete(username);
     this.forgotPasswordRequests.delete(username);
+    this.logger.debug(`MockCognitoAdapter: Password successfully reset for ${username}. Cleaned up codes and requests.`);
   }
 
   // Helper method to validate password complexity
@@ -222,5 +275,13 @@ export class MockCognitoAdapter implements IAuthAdapter {
     }
 
     user.password = newPassword;
+  }
+
+  reset(): void {
+    this.logger.debug('MockCognitoAdapter: Resetting all internal data (users, codes, tokens, requests).');
+    this.users.clear();
+    this.confirmationCodes.clear();
+    this.refreshTokens.clear();
+    this.forgotPasswordRequests.clear();
   }
 }

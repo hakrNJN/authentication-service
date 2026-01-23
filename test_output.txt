@@ -1,0 +1,115 @@
+FAIL tests/unit/application/services/auth.service.test.ts (6.923 s)
+  AuthService
+    login
+      ΓêÜ should return tokens on successful login (10 ms)
+      ΓêÜ should throw ValidationError if username is missing (28 ms)
+      ΓêÜ should throw ValidationError if password is missing (2 ms)
+      ΓêÜ should re-throw MfaRequiredError from adapter (2 ms)
+      ΓêÜ should re-throw other operational errors from adapter (2 ms)
+      ΓêÜ should wrap non-operational errors from adapter (2 ms)
+    verifyMfa
+      ΓêÜ should throw ValidationError if username is missing (2 ms)
+      ΓêÜ should throw ValidationError if session is missing (3 ms)
+      ΓêÜ should throw ValidationError if challengeName is missing (3 ms)
+      ΓêÜ should throw ValidationError if code is missing (2 ms)
+      ΓêÜ should call adapter with correct SMS_MFA responses and return tokens (2 ms)
+      ΓêÜ should call adapter with correct SOFTWARE_TOKEN_MFA responses and return tokens (2 ms)
+      ΓêÜ should call adapter with correct DEVICE_PASSWORD_VERIFIER responses and return tokens (3 ms)
+      ΓêÜ should throw ValidationError if DEVICE_PASSWORD_VERIFIER code is invalid JSON (12 ms)
+      ΓêÜ should throw ValidationError for unsupported challenge type (3 ms)
+      ΓêÜ should re-throw operational errors from adapter (3 ms)
+      ΓêÜ should wrap non-operational errors from adapter (2 ms)
+    refresh
+      ΓêÜ should return tokens on successful refresh (1 ms)
+      ΓêÜ should throw ValidationError if refreshToken is missing (1 ms)
+      ΓêÜ should re-throw AuthenticationError from adapter (1 ms)
+      ΓêÜ should wrap non-AuthenticationError errors from adapter (2 ms)
+    getUserInfo
+      ΓêÜ should return user info on success (2 ms)
+      ΓêÜ should throw ValidationError if accessToken is missing (1 ms)
+      ΓêÜ should re-throw AuthenticationError from adapter (1 ms)
+      ΓêÜ should wrap non-AuthenticationError errors from adapter (2 ms)
+    signUp
+      ΓêÜ should return signup result on success (2 ms)
+      ΓêÜ should throw ValidationError if username is missing (5 ms)
+      ΓêÜ should throw ValidationError if password is missing (2 ms)
+      ΓêÜ should throw ValidationError if email attribute is missing (2 ms)
+      ΓêÜ should re-throw operational errors from adapter (2 ms)
+      ΓêÜ should wrap non-operational errors from adapter (1 ms)
+    confirmSignUp
+      ΓêÜ should complete successfully (2 ms)
+      ΓêÜ should throw ValidationError if username is missing (1 ms)
+      ΓêÜ should throw ValidationError if confirmationCode is missing (2 ms)
+      ΓêÜ should re-throw known errors (Auth, NotFound) from adapter (2 ms)
+      ΓêÜ should wrap unexpected errors from adapter (1 ms)
+    signOut
+      ΓêÜ should complete successfully (1 ms)
+      ΓêÜ should throw ValidationError if accessToken is missing (1 ms)
+      ΓêÜ should re-throw AuthenticationError from adapter (2 ms)
+      ΓêÜ should wrap unexpected errors from adapter (6 ms)
+    initiateForgotPassword
+      ΓêÜ should return delivery details on success (2 ms)
+      ΓêÜ should throw ValidationError if username is missing (1 ms)
+      ΓêÜ should re-throw operational errors from adapter (2 ms)
+      ΓêÜ should wrap non-operational errors from adapter (2 ms)
+    confirmForgotPassword
+      ├ù should complete successfully (4 ms)
+      ΓêÜ should throw ValidationError if username is missing (1 ms)
+      ΓêÜ should throw ValidationError if code is missing (2 ms)
+      ΓêÜ should throw ValidationError if newPassword is missing (2 ms)
+      ΓêÜ should re-throw operational errors from adapter (1 ms)
+      ├ù should wrap non-operational errors from adapter (26 ms)
+    changePassword
+      ΓêÜ should complete successfully (2 ms)
+      ΓêÜ should throw ValidationError if token is missing (1 ms)
+      ΓêÜ should throw ValidationError if oldPassword is missing (1 ms)
+      ΓêÜ should throw ValidationError if newPassword is missing (2 ms)
+      ΓêÜ should throw ValidationError if old and new passwords are the same (2 ms)
+      ΓêÜ should re-throw operational errors from adapter (2 ms)
+      ΓêÜ should wrap non-operational errors from adapter (2 ms)
+
+  ΓùÅ AuthService ΓÇ║ confirmForgotPassword ΓÇ║ should complete successfully
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "Confirming forgot password for user: user"
+    Received: "AuthService initialized."
+
+    Number of calls: 1
+
+      430 |             await expect(authService.confirmForgotPassword(username, code, newPassword)).resolves.toBeUndefined();
+      431 |             expect(mockAuthStrategy.confirmForgotPassword).toHaveBeenCalledWith(username, code, newPassword);
+    > 432 |             expect(mockLogger.info).toHaveBeenCalledWith(`Confirming forgot password for user: ${username}`);
+          |                                     ^
+      433 |             expect(mockLogger.info).toHaveBeenCalledWith(`Password reset successfully for user: ${username}`);
+      434 |         });
+      435 |
+
+      at Object.<anonymous> (tests/unit/application/services/auth.service.test.ts:432:37)
+
+  ΓùÅ AuthService ΓÇ║ confirmForgotPassword ΓÇ║ should wrap non-operational errors from adapter
+
+    expect(received).rejects.toThrow(expected)
+
+    Expected constructor: BaseError
+    Received constructor: Error
+
+    Received message: "DB connection failed"
+
+          458 |
+          459 |         it('should wrap non-operational errors from adapter', async () => {
+        > 460 |             const unexpectedError = new Error('DB connection failed');
+              |                                     ^
+          461 |             mockAuthStrategy.confirmForgotPassword.mockRejectedValue(unexpectedError);
+          462 |
+          463 |             await expect(authService.confirmForgotPassword(username, code, newPassword)).rejects.toThrow(BaseError); // Wraps as BaseError
+
+      at Object.<anonymous> (tests/unit/application/services/auth.service.test.ts:460:37)
+      at Object.toThrow (node_modules/.pnpm/expect@29.7.0/node_modules/expect/build/index.js:218:22)
+      at Object.<anonymous> (tests/unit/application/services/auth.service.test.ts:463:98)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 55 passed, 57 total
+Snapshots:   0 total
+Time:        7.355 s, estimated 14 s
+Ran all test suites matching /tests\\unit\\application\\services\\auth.service.test.ts/i.

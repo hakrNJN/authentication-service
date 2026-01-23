@@ -3,15 +3,41 @@ import request from 'supertest';
 import { container } from 'tsyringe';
 import { createApp } from '../../src/app';
 import { IAuthAdapter } from '../../src/application/interfaces/IAuthAdapter';
+import { ILogger } from '../../src/application/interfaces/ILogger';
 import { TYPES } from '../../src/shared/constants/types';
 import { MockCognitoAdapter } from './setup/mockCognitoAdapter';
+import { AuthService } from '../../src/application/services/auth.service';
+import { AuthController } from '../../src/api/controllers/auth.controller';
+import { IAuthService } from '../../src/application/interfaces/IAuthService';
+import { EnvironmentConfigService } from '../../src/infrastructure/config/EnvironmentConfigService';
+import { TokenBlacklistService } from '../../src/application/services/TokenBlacklistService';
+import { IConfigService } from '../../src/application/interfaces/IConfigService';
+import { ITokenBlacklistService } from '../../src/application/interfaces/ITokenBlacklistService';
 
+
+class MockLogger implements ILogger {
+  debug(message: string, ...args: any[]): void {
+    console.debug(`[DEBUG] ${message}`, ...args);
+  }
+  info(message: string, ...args: any[]): void {
+    console.info(`[INFO] ${message}`, ...args);
+  }
+  warn(message: string, ...args: any[]): void {
+    console.warn(`[WARN] ${message}`, ...args);
+  }
+  error(message: string, ...args: any[]): void {
+    console.error(`[ERROR] ${message}`, ...args);
+  }
+}
 
 describe('Comprehensive Authentication E2E Tests', () => {
   let app: Express & { shutdown?: () => Promise<void> };
   let mockAdapter: MockCognitoAdapter;
 
   beforeEach(async () => {
+    // Clear instances before each test to ensure a clean slate
+    container.clearInstances();
+
     // Set E2E test environment variables
     process.env.NODE_ENV = 'test';
     process.env.REDIS_URL = 'redis://192.168.2.252:6379';
@@ -21,9 +47,20 @@ describe('Comprehensive Authentication E2E Tests', () => {
     process.env.COGNITO_USER_POOL_ID = 'test-user-pool-id';
     process.env.COGNITO_CLIENT_ID = 'testClientId123';
 
-    // Use mock cognito adapter
-    mockAdapter = new MockCognitoAdapter();
-    container.registerInstance(TYPES.AuthAdapter, mockAdapter);
+    const mockLogger = new MockLogger();
+    mockAdapter = new MockCognitoAdapter(mockLogger);
+    mockAdapter.reset();
+
+    // Register the mock adapter FIRST
+    container.registerInstance<IAuthAdapter>(TYPES.AuthAdapter, mockAdapter);
+
+    // Now, explicitly register the services/controllers that depend on IAuthAdapter
+    // This forces tsyringe to resolve them *after* the mock is in place.
+    container.registerSingleton<ILogger>(TYPES.Logger, MockLogger);
+    container.registerSingleton<IConfigService>(TYPES.ConfigService, EnvironmentConfigService);
+    container.registerSingleton<ITokenBlacklistService>(TYPES.TokenBlacklistService, TokenBlacklistService);
+    container.registerSingleton<IAuthService>(TYPES.AuthService, AuthService);
+    container.registerSingleton(AuthController);
 
     // Create app instance
     app = createApp();
@@ -37,6 +74,7 @@ describe('Comprehensive Authentication E2E Tests', () => {
         name: 'Test User'
       }
     });
+    await mockAdapter.confirmSignUp('testuser@example.com', '123456');
   });
 
   afterEach(async () => {
@@ -254,7 +292,7 @@ describe('Comprehensive Authentication E2E Tests', () => {
           const response = await request(app)
             .post('/api/auth/forgot-password')
             .send({
-              username: 'existinguser@example.com'
+              username: 'testuser@example.com'
             });
 
           expect(response.status).toBe(200);
