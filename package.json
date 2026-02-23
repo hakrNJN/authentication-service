@@ -12,8 +12,8 @@
     "test:integration:coverage": "cross-env SHARED_SECRET=test-shared-secret REDIS_URL=redis://192.168.2.252:6379 USE_REDIS_BLACKLIST=true jest --coverage --testPathPattern=tests/integration",
     "test:e2e:coverage": "cross-env SHARED_SECRET=test-shared-secret-e2e REDIS_URL=redis://192.168.2.252:6379 USE_REDIS_BLACKLIST=true jest --coverage --config jest.e2e.config.js --testPathPattern=tests/e2e",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
-    "start": "node --env-file=.env dist/main.js",
-    "dev": "ts-node-dev --watch --respawn --transpile-only --env-file=.env.example src/main.ts",
+    "start": "node --require ./dist/infrastructure/observability/tracer.js --env-file=.env dist/main.js",
+    "dev": "ts-node-dev --watch --respawn --transpile-only --require ./src/infrastructure/observability/tracer.ts --env-file=.env.example src/main.ts",
     "build": "tsc"
   },
   "keywords": [],
@@ -27,6 +27,7 @@
     "@opentelemetry/auto-instrumentations-node": "^0.62.0",
     "@opentelemetry/exporter-metrics-otlp-grpc": "^0.203.0",
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.203.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.212.0",
     "@opentelemetry/resources": "^2.0.1",
     "@opentelemetry/sdk-metrics": "^2.0.1",
     "@opentelemetry/sdk-node": "^0.203.0",
