@@ -7,7 +7,7 @@ export const SignUpSchema = z.object({
     username: z.string({ required_error: 'Username is required' })
         .min(3, 'Username must be at least 3 characters long')
         .max(100, 'Username cannot exceed 100 characters')
-        .regex(/^[a-zA-Z0-9_.-]+$/, 'Username can only contain letters, numbers, underscores, hyphens, and periods'),
+        .regex(/^[a-zA-Z0-9_.\-@+]+$/, 'Username can only contain letters, numbers, underscores, hyphens, periods, and at signs'),
 
     password: z.string({ required_error: 'Password is required' })
         .min(8, 'Password must be at least 8 characters long')
@@ -21,7 +21,7 @@ export const SignUpSchema = z.object({
         name: z.string({ required_error: 'Name attribute is required' })
             .min(1, 'Name cannot be empty')
             .max(100, 'Name cannot exceed 100 characters')
-            .regex(/^[a-zA-Z0-9\s.,'()-]+$/, 'Name can only contain letters, numbers, spaces, and common punctuation'),
+            .regex(/^[a-zA-Z0-9\s.,'()\-+]+$/, 'Name can only contain letters, numbers, spaces, and common punctuation'),
     })
     // .passthrough() // REMOVED: Disallow extra attributes to match Record<string, string>
     // Use .strict() if NO extra attributes should be allowed at all, otherwise just removing passthrough works

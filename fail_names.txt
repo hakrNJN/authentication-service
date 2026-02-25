@@ -1,0 +1,4 @@
+FAIL tests/e2e/auth.comprehensive.e2e.test.ts (45.818 s)
+FAIL tests/integration/auth.api.integration.test.ts (5.21 s)
+FAIL tests/integration/auth.service.integration.test.ts
+FAIL tests/e2e/env-verification.e2e.test.ts

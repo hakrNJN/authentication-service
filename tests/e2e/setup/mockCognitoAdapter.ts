@@ -104,6 +104,13 @@ export class MockCognitoAdapter implements IAuthAdapter {
     };
   }
 
+  async login(username?: string, password?: string): Promise<AuthTokens> {
+    if (!username || !password) {
+      throw new AuthenticationError('Username and password are required.');
+    }
+    return this.authenticateUser(username, password);
+  }
+
   async respondToAuthChallenge(username: string, session: string, challengeName: ChallengeNameType, responses: Record<string, string>): Promise<AuthTokens> {
     const user = this.users.get(username);
     if (!user) {

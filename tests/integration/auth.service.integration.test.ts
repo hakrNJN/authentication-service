@@ -9,7 +9,7 @@ import { MfaRequiredError } from '../../src/domain/exceptions/AuthenticationErro
 import * as jwt from 'jsonwebtoken';
 
 // Mock dependencies
-const mockAuthAdapter: jest.Mocked<IAuthAdapter> = {
+const mockAuthAdapter: jest.Mocked<any> = {
   signUp: jest.fn(),
   confirmSignUp: jest.fn(),
   authenticateUser: jest.fn(),
@@ -21,7 +21,16 @@ const mockAuthAdapter: jest.Mocked<IAuthAdapter> = {
   confirmForgotPassword: jest.fn(),
   changePassword: jest.fn(),
   adminInitiateForgotPassword: jest.fn(),
-  adminSetPassword: jest.fn()
+  adminSetPassword: jest.fn(),
+  getAuthMode: jest.fn(),
+  login: jest.fn(),
+  validateToken: jest.fn()
+};
+
+const mockEventBus = {
+  publish: jest.fn().mockResolvedValue(undefined),
+  subscribe: jest.fn(),
+  unsubscribe: jest.fn()
 };
 
 const mockLogger: jest.Mocked<ILogger> = {
@@ -40,9 +49,9 @@ const mockConfigService: jest.Mocked<IConfigService> = {
   getOrThrow: jest.fn()
 };
 
-const mockTokenBlacklistService: jest.Mocked<ITokenBlacklistService> = {
+const mockTokenBlacklistService = {
   addToBlacklist: jest.fn(),
-  isBlacklisted: jest.fn(),
+  isBlacklisted: jest.fn().mockResolvedValue(false),
   disconnect: jest.fn()
 };
 
@@ -51,7 +60,8 @@ describe('Comprehensive Authentication Integration Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    authService = new AuthService(mockLogger, mockConfigService, mockAuthAdapter, mockTokenBlacklistService);
+    mockEventBus.publish.mockResolvedValue(undefined);
+    authService = new AuthService(mockLogger, mockConfigService, mockAuthAdapter, mockTokenBlacklistService, mockEventBus);
   });
 
   describe('Complete Authentication Flow', () => {
@@ -77,7 +87,7 @@ describe('Comprehensive Authentication Integration Tests', () => {
       expect(mockAuthAdapter.confirmSignUp).toHaveBeenCalledWith(username, '123456');
 
       // Step 3: Login
-      mockAuthAdapter.authenticateUser.mockResolvedValue({
+      mockAuthAdapter.login.mockResolvedValue({
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
         expiresIn: 3600,
@@ -96,10 +106,10 @@ describe('Comprehensive Authentication Integration Tests', () => {
       // Step 1: Login returns MFA challenge
       // Step 1: Login throws MFA challenge
       const mfaError = new MfaRequiredError('mfa-session', ChallengeNameType.SMS_MFA, { CODE_DELIVERY_DESTINATION: '+1***5678' });
-      mockAuthAdapter.authenticateUser.mockRejectedValue(mfaError);
+      mockAuthAdapter.login.mockRejectedValue(mfaError);
 
       await expect(authService.login(username, password)).rejects.toThrow(MfaRequiredError);
-      
+
       // Verify the error has the expected properties
       try {
         await authService.login(username, password);
@@ -125,14 +135,14 @@ describe('Comprehensive Authentication Integration Tests', () => {
       const tempPassword = 'TempPassword123!';
 
       // Step 1: Login throws NEW_PASSWORD_REQUIRED challenge
-      const passwordError = new MfaRequiredError('password-session', ChallengeNameType.NEW_PASSWORD_REQUIRED, { 
+      const passwordError = new MfaRequiredError('password-session', ChallengeNameType.NEW_PASSWORD_REQUIRED, {
         USER_ATTRIBUTES: '{"email":"testuser@example.com"}',
         requiredAttributes: '[]'
       });
-      mockAuthAdapter.authenticateUser.mockRejectedValue(passwordError);
+      mockAuthAdapter.login.mockRejectedValue(passwordError);
 
       await expect(authService.login(username, tempPassword)).rejects.toThrow(MfaRequiredError);
-      
+
       // Verify the error has the expected properties
       try {
         await authService.login(username, tempPassword);
@@ -149,9 +159,9 @@ describe('Comprehensive Authentication Integration Tests', () => {
       });
 
       const newPasswordResult = await authService.verifyMfa(
-        username, 
-        'password-session', 
-        ChallengeNameType.NEW_PASSWORD_REQUIRED, 
+        username,
+        'password-session',
+        ChallengeNameType.NEW_PASSWORD_REQUIRED,
         'NewPassword123!'
       );
       expect(newPasswordResult.accessToken).toBe('access-token');
@@ -163,10 +173,10 @@ describe('Comprehensive Authentication Integration Tests', () => {
 
       // Step 1: Login throws SOFTWARE_TOKEN_MFA challenge
       const totpError = new MfaRequiredError('totp-session', ChallengeNameType.SOFTWARE_TOKEN_MFA, {});
-      mockAuthAdapter.authenticateUser.mockRejectedValue(totpError);
+      mockAuthAdapter.login.mockRejectedValue(totpError);
 
       await expect(authService.login(username, password)).rejects.toThrow(MfaRequiredError);
-      
+
       // Verify the error has the expected properties
       try {
         await authService.login(username, password);
@@ -183,9 +193,9 @@ describe('Comprehensive Authentication Integration Tests', () => {
       });
 
       const totpResult = await authService.verifyMfa(
-        username, 
-        'totp-session', 
-        ChallengeNameType.SOFTWARE_TOKEN_MFA, 
+        username,
+        'totp-session',
+        ChallengeNameType.SOFTWARE_TOKEN_MFA,
         '123456'
       );
       expect(totpResult.accessToken).toBe('access-token');
@@ -194,28 +204,28 @@ describe('Comprehensive Authentication Integration Tests', () => {
 
   describe('Token Management Integration', () => {
     it('should handle token refresh and blacklisting', async () => {
-        const refreshToken = 'refresh-token';
-        const oldAccessToken = jwt.sign({ jti: 'test-jti', exp: Math.floor(Date.now() / 1000) + 60 }, 'secret');
+      const refreshToken = 'refresh-token';
+      const oldAccessToken = jwt.sign({ jti: 'test-jti', exp: Math.floor(Date.now() / 1000) + 60 }, 'secret');
 
-        // Mock token refresh
-        mockAuthAdapter.refreshToken.mockResolvedValue({
-            accessToken: 'new-access-token',
-            expiresIn: 3600,
-            tokenType: 'Bearer'
-        });
+      // Mock token refresh
+      mockAuthAdapter.refreshToken.mockResolvedValue({
+        accessToken: 'new-access-token',
+        expiresIn: 3600,
+        tokenType: 'Bearer'
+      });
 
-        const result = await authService.refresh(refreshToken);
-        expect(result.accessToken).toBe('new-access-token');
+      const result = await authService.refresh(refreshToken);
+      expect(result.accessToken).toBe('new-access-token');
 
-        // Mock logout (should blacklist token)
-        mockAuthAdapter.signOut.mockResolvedValue();
-        mockTokenBlacklistService.addToBlacklist.mockResolvedValue();
+      // Mock logout (should blacklist token)
+      mockAuthAdapter.signOut.mockResolvedValue(undefined);
+      mockTokenBlacklistService.addToBlacklist.mockResolvedValue(undefined);
 
-        await authService.signOut(oldAccessToken);
-        expect(mockTokenBlacklistService.addToBlacklist).toHaveBeenCalledWith(
-            'test-jti',
-            expect.any(Number)
-        );
+      await authService.signOut(oldAccessToken);
+      expect(mockTokenBlacklistService.addToBlacklist).toHaveBeenCalledWith(
+        'test-jti',
+        expect.any(Number)
+      );
     });
 
     it('should check token blacklist before operations', async () => {
@@ -283,7 +293,7 @@ describe('Comprehensive Authentication Integration Tests', () => {
       expect(initiateResult?.Destination).toBe('t***@example.com');
 
       // Step 2: Confirm forgot password
-      mockAuthAdapter.confirmForgotPassword.mockResolvedValue();
+      mockAuthAdapter.confirmForgotPassword.mockResolvedValue(undefined);
 
       await authService.confirmForgotPassword(username, confirmationCode, newPassword);
       expect(mockAuthAdapter.confirmForgotPassword).toHaveBeenCalledWith(
@@ -300,7 +310,7 @@ describe('Comprehensive Authentication Integration Tests', () => {
 
       // Mock token as not blacklisted
       mockTokenBlacklistService.isBlacklisted.mockResolvedValue(false);
-      mockAuthAdapter.changePassword.mockResolvedValue();
+      mockAuthAdapter.changePassword.mockResolvedValue(undefined);
 
       await authService.changePassword(accessToken, oldPassword, newPassword);
       expect(mockAuthAdapter.changePassword).toHaveBeenCalledWith(
@@ -327,7 +337,7 @@ describe('Comprehensive Authentication Integration Tests', () => {
       const password = 'TestPassword123!';
 
       // Mock adapter throwing error
-      mockAuthAdapter.authenticateUser.mockRejectedValue(new Error('Cognito error'));
+      mockAuthAdapter.login.mockRejectedValue(new Error('Cognito error'));
 
       await expect(authService.login(username, password))
         .rejects.toThrow('Login failed: Cognito error');
@@ -401,7 +411,7 @@ describe('Comprehensive Authentication Integration Tests', () => {
       const accessToken = 'test-token';
 
       // Mock blacklist service success but adapter error
-      mockTokenBlacklistService.addToBlacklist.mockResolvedValue();
+      mockTokenBlacklistService.addToBlacklist.mockResolvedValue(undefined);
       mockAuthAdapter.signOut.mockRejectedValue(new Error('Signout failed'));
 
       await expect(authService.signOut(accessToken))
@@ -437,7 +447,7 @@ describe('Comprehensive Authentication Integration Tests', () => {
       const username = '';
       const password = '';
 
-      mockAuthAdapter.authenticateUser.mockRejectedValue(new Error('Invalid credentials'));
+      mockAuthAdapter.login.mockRejectedValue(new Error('Invalid credentials'));
 
       await expect(authService.login(username, password))
         .rejects.toThrow('Username and password are required.');
@@ -458,18 +468,18 @@ describe('Comprehensive Authentication Integration Tests', () => {
     });
 
     it('should handle signup with minimal attributes', async () => {
-        const username = 'testuser@example.com';
-        const password = 'TestPassword123!';
-        const attributes = { email: 'testuser@example.com' };
+      const username = 'testuser@example.com';
+      const password = 'TestPassword123!';
+      const attributes = { email: 'testuser@example.com' };
 
-        mockAuthAdapter.signUp.mockResolvedValue({
-            userSub: 'user-123',
-            userConfirmed: true
-        });
+      mockAuthAdapter.signUp.mockResolvedValue({
+        userSub: 'user-123',
+        userConfirmed: true
+      });
 
-        const result = await authService.signUp({ username, password, attributes });
-        expect(result.userSub).toBe('user-123');
-        expect(result.userConfirmed).toBe(true);
+      const result = await authService.signUp({ username, password, attributes });
+      expect(result.userSub).toBe('user-123');
+      expect(result.userConfirmed).toBe(true);
     });
 
     it('should handle concurrent token operations', async () => {
@@ -503,7 +513,7 @@ describe('Comprehensive Authentication Integration Tests', () => {
       const username = 'testuser@example.com';
       const password = 'TestPassword123!';
 
-      mockAuthAdapter.authenticateUser.mockResolvedValue({
+      mockAuthAdapter.login.mockResolvedValue({
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
         expiresIn: 3600,
@@ -515,25 +525,25 @@ describe('Comprehensive Authentication Integration Tests', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(`Login successful for user: ${username}`);
     });
 
-        it('should log MFA challenges', async () => {
-        const username = 'testuser@example.com';
-        const password = 'TestPassword123!';
+    it('should log MFA challenges', async () => {
+      const username = 'testuser@example.com';
+      const password = 'TestPassword123!';
 
-        const mfaError = new MfaRequiredError('mfa-session', ChallengeNameType.SMS_MFA, {});
-        mockAuthAdapter.authenticateUser.mockRejectedValue(mfaError);
+      const mfaError = new MfaRequiredError('mfa-session', ChallengeNameType.SMS_MFA, {});
+      mockAuthAdapter.login.mockRejectedValue(mfaError);
 
-        await expect(authService.login(username, password)).rejects.toThrow(MfaRequiredError);
+      await expect(authService.login(username, password)).rejects.toThrow(MfaRequiredError);
 
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-            `MFA required for user ${username}: ${ChallengeNameType.SMS_MFA}`
-        );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        `MFA required for user ${username}: ${ChallengeNameType.SMS_MFA}`
+      );
     });
 
     it('should log token blacklisting', async () => {
       const accessToken = 'test-token';
 
-      mockTokenBlacklistService.addToBlacklist.mockResolvedValue();
-      mockAuthAdapter.signOut.mockResolvedValue();
+      mockTokenBlacklistService.addToBlacklist.mockResolvedValue(undefined);
+      mockAuthAdapter.signOut.mockResolvedValue(undefined);
 
       await authService.signOut(accessToken);
 
@@ -549,29 +559,29 @@ describe('Comprehensive Authentication Integration Tests', () => {
       const accessToken = jwt.sign({ jti: 'complex-flow-jti', exp: Math.floor(Date.now() / 1000) + 60 }, 'secret');
 
       // Complete flow: signup -> confirm -> login -> get user info -> logout
-      
+
       // 1. Signup
       mockAuthAdapter.signUp.mockResolvedValue({
         userSub: 'user-123',
         userConfirmed: false
       });
-      
+
       await authService.signUp({ username, password, attributes });
-      
+
       // 2. Confirm
-      mockAuthAdapter.confirmSignUp.mockResolvedValue();
+      mockAuthAdapter.confirmSignUp.mockResolvedValue(undefined);
       await authService.confirmSignUp(username, '123456');
-      
+
       // 3. Login
-      mockAuthAdapter.authenticateUser.mockResolvedValue({
+      mockAuthAdapter.login.mockResolvedValue({
         accessToken,
         refreshToken: 'refresh-token',
         expiresIn: 3600,
         tokenType: 'Bearer'
       });
-      
+
       const loginResult = await authService.login(username, password);
-      
+
       // 4. Get user info
       mockTokenBlacklistService.isBlacklisted.mockResolvedValue(false);
       mockAuthAdapter.getUserFromToken.mockResolvedValue({
@@ -579,15 +589,15 @@ describe('Comprehensive Authentication Integration Tests', () => {
         userSub: 'user-123',
         attributes
       });
-      
+
       const userInfo = await authService.getUserInfo(loginResult.accessToken);
-      
+
       // 5. Logout
-      mockTokenBlacklistService.addToBlacklist.mockResolvedValue();
-      mockAuthAdapter.signOut.mockResolvedValue();
-      
+      mockTokenBlacklistService.addToBlacklist.mockResolvedValue(undefined);
+      mockAuthAdapter.signOut.mockResolvedValue(undefined);
+
       await authService.signOut(loginResult.accessToken);
-      
+
       // Verify all operations completed successfully
       expect(userInfo.username).toBe(username);
       expect(mockTokenBlacklistService.addToBlacklist).toHaveBeenCalledWith('complex-flow-jti', expect.any(Number));
@@ -599,25 +609,25 @@ describe('Comprehensive Authentication Integration Tests', () => {
       const password = 'TestPassword123!';
 
       // Start login flow
-      mockAuthAdapter.authenticateUser.mockResolvedValue({
+      mockAuthAdapter.login.mockResolvedValue({
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
         expiresIn: 3600,
         tokenType: 'Bearer'
       });
-      
+
       const loginResult = await authService.login(username, password);
-      
+
       // Blacklist service fails during getUserInfo
       mockTokenBlacklistService.isBlacklisted.mockRejectedValue(new Error('Redis connection failed'));
-      
+
       await expect(authService.getUserInfo(loginResult.accessToken))
         .rejects.toThrow('Failed to retrieve user info: Redis connection failed');
-      
+
       // But logout should still work if blacklist service recovers
-      mockTokenBlacklistService.addToBlacklist.mockResolvedValue();
-      mockAuthAdapter.signOut.mockResolvedValue();
-      
+      mockTokenBlacklistService.addToBlacklist.mockResolvedValue(undefined);
+      mockAuthAdapter.signOut.mockResolvedValue(undefined);
+
       await expect(authService.signOut(loginResult.accessToken))
         .resolves.not.toThrow();
     });

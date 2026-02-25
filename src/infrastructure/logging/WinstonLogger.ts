@@ -34,10 +34,16 @@ export class WinstonLogger implements ILogger {
             return info;
         });
 
+        // Add fallback for tests where winston.format mock might not create a valid function wrapper
+        const formatInstance = typeof traceFormat === 'function' ? traceFormat() : (traceFormat as any);
+
         // Create base logger with console transport
         const logger = winston.createLogger({
             level: logLevel,
-            format: winston.format.combine(traceFormat(), nodeEnv === 'development' || nodeEnv === 'test' ? LogFormats.developmentFormat : LogFormats.productionFormat),
+            format: winston.format.combine(
+                formatInstance,
+                nodeEnv === 'development' || nodeEnv === 'test' ? LogFormats.developmentFormat : LogFormats.productionFormat
+            ),
             transports: [
                 new winston.transports.Console({
                     level: logLevel

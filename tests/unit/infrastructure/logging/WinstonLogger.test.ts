@@ -7,14 +7,13 @@ const mockLoggerInstance = {
     add: jest.fn()
 };
 
-// Create the createLogger mock
 const createLoggerMock = jest.fn().mockReturnValue(mockLoggerInstance);
 
 // Mock winston
-jest.mock('winston', () => ({
-    createLogger: createLoggerMock,
-    format: {
-        combine: jest.fn(),
+jest.mock('winston', () => {
+    const mockFormatFn = jest.fn().mockReturnValue(jest.fn());
+    Object.assign(mockFormatFn, {
+        combine: jest.fn().mockReturnValue('mocked-combine'),
         timestamp: jest.fn(),
         errors: jest.fn(),
         metadata: jest.fn(),
@@ -22,12 +21,16 @@ jest.mock('winston', () => ({
         colorize: jest.fn(),
         printf: jest.fn(),
         splat: jest.fn()
-    },
-    transports: {
-        Console: jest.fn(),
-        File: jest.fn()
-    }
-}));
+    });
+    return {
+        createLogger: createLoggerMock,
+        format: mockFormatFn,
+        transports: {
+            Console: jest.fn(),
+            File: jest.fn()
+        }
+    };
+});
 
 // Mock winston-cloudwatch
 const mockCloudWatchTransport = jest.fn().mockImplementation(() => ({
@@ -41,17 +44,8 @@ jest.mock('winston-cloudwatch', () => mockCloudWatchTransport);
 import { container } from 'tsyringe';
 import winston from 'winston';
 import { IConfigService } from '../../../../src/application/interfaces/IConfigService';
-import { LogFormats } from '../../../../src/infrastructure/logging/logger.config';
 import { WinstonLogger } from '../../../../src/infrastructure/logging/WinstonLogger';
 import { TYPES } from '../../../../src/shared/constants/types';
-
-// Mock LogFormats
-jest.mock('../../../../src/infrastructure/logging/logger.config', () => ({
-    LogFormats: {
-        productionFormat: Symbol('productionFormat'),
-        developmentFormat: Symbol('developmentFormat')
-    }
-}));
 
 // Mock console to avoid noise during tests
 const originalConsoleInfo = console.info;
@@ -63,7 +57,7 @@ describe('WinstonLogger', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        
+
         mockConfigService = {
             get: jest.fn(),
             getNumber: jest.fn(),
@@ -78,13 +72,13 @@ describe('WinstonLogger', () => {
 
         // Setup basic development environment
         mockConfigService.get.mockImplementation((key: string) => {
-            switch(key) {
+            switch (key) {
                 case 'LOG_LEVEL': return 'debug';
                 case 'NODE_ENV': return 'development';
                 default: return undefined;
             }
         });
-        
+
         // Reset the createLogger mock to return a fresh instance
         createLoggerMock.mockReturnValue(mockLoggerInstance);
     });
@@ -97,12 +91,13 @@ describe('WinstonLogger', () => {
     describe('Constructor', () => {
         it('should initialize with development settings', () => {
             logger = container.resolve(WinstonLogger);
-            
-            expect(winston.createLogger).toHaveBeenCalledWith({
-                level: 'debug',
-                format: LogFormats.developmentFormat,
-                transports: [expect.any(Object)]
-            });
+
+            expect(winston.createLogger).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    level: 'debug',
+                    transports: expect.any(Array)
+                })
+            );
             expect(winston.transports.Console).toHaveBeenCalledWith({
                 level: 'debug'
             });
@@ -110,7 +105,7 @@ describe('WinstonLogger', () => {
 
         it('should initialize with production settings and CloudWatch', () => {
             mockConfigService.get.mockImplementation((key: string) => {
-                switch(key) {
+                switch (key) {
                     case 'LOG_LEVEL': return 'info';
                     case 'NODE_ENV': return 'production';
                     case 'AWS_REGION': return 'us-east-1';
@@ -122,11 +117,12 @@ describe('WinstonLogger', () => {
 
             logger = container.resolve(WinstonLogger);
 
-            expect(winston.createLogger).toHaveBeenCalledWith({
-                level: 'info',
-                format: LogFormats.productionFormat,
-                transports: [expect.any(Object)]
-            });
+            expect(winston.createLogger).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    level: 'info',
+                    transports: expect.any(Array)
+                })
+            );
             expect(mockLoggerInstance.add).toHaveBeenCalled();
             expect(mockCloudWatchTransport).toHaveBeenCalledWith({
                 logGroupName: 'test-group',

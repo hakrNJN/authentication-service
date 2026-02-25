@@ -7,10 +7,7 @@ export const ForgotPasswordSchema = z.object({
     username: z.string({ required_error: 'Username or email is required' })
         .min(1, 'Username/email cannot be empty')
         .max(128, 'Username is too long')
-        .refine(
-            (value) => /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(value),
-            'Invalid email format'
-        ),
+        .regex(/^[a-zA-Z0-9_.\-@+]+$/, 'Username can only contain letters, numbers, underscores, hyphens, periods, @ and +'),
 });
 
 /**

@@ -1,0 +1,859 @@
+
+> authentication-service@1.0.0 test:integration E:\NodeJS\PBAC_Auth\authentication-service
+> cross-env SHARED_SECRET=test-shared-secret REDIS_URL=redis://192.168.2.252:6379 USE_REDIS_BLACKLIST=true jest --testPathPattern=tests/integration "--" "tests/integration/auth.service.integration.test.ts"
+
+(node:11564) PromiseRejectionHandledWarning: Promise rejection was handled asynchronously (rejection id: 2)
+(Use `node --trace-warnings ...` to show where the warning was created)
+FAIL tests/integration/auth.api.integration.test.ts (24.785 s)
+  ΓùÅ Console
+
+    console.info
+      [ConfigService] Reading configuration from process.env (expected to be populated by --env-file)
+
+      at new EnvironmentConfigService (src/infrastructure/config/EnvironmentConfigService.ts:39:17)
+          at Array.map (<anonymous>)
+          at Array.map (<anonymous>)
+          at Array.map (<anonymous>)
+
+    console.debug
+      [ConfigService] Configuration loaded from environment variables.
+
+      at new EnvironmentConfigService (src/infrastructure/config/EnvironmentConfigService.ts:41:17)
+          at Array.map (<anonymous>)
+          at Array.map (<anonymous>)
+          at Array.map (<anonymous>)
+
+    console.info
+      [ConfigService] Required configuration keys verified.
+
+      at new EnvironmentConfigService (src/infrastructure/config/EnvironmentConfigService.ts:48:17)
+          at Array.map (<anonymous>)
+          at Array.map (<anonymous>)
+          at Array.map (<anonymous>)
+
+    console.info
+      [WinstonLogger] Logger initialized with level "error" in "test" environment.
+
+      at WinstonLogger.initializeLogger (src/infrastructure/logging/WinstonLogger.ts:85:17)
+          at Array.map (<anonymous>)
+          at Array.map (<anonymous>)
+
+    console.log
+      2026-02-24 17:07:10 [error]: Error processing request POST /api/auth/signup: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:10 [error]: Error processing request POST /api/auth/signup: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:10 [error]: Error processing request POST /api/auth/signup: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:10 [error]: Error processing request POST /api/auth/login: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:10 [error]: Error processing request POST /api/auth/login: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:10 [error]: Error processing request POST /api/auth/confirm-signup: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:10 [error]: Error processing request POST /api/auth/signup: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:10 [error]: Error processing request POST /api/auth/signup: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:11 [error]: Error processing request POST /api/auth/confirm-signup: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:11 [error]: Error processing request POST /api/auth/confirm-signup: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:11 [error]: Error processing request POST /api/auth/login: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:11 [error]: Error processing request POST /api/auth/login: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:11 [error]: Error processing request POST /api/auth/login: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:12 [error]: Respond to challenge failed: Username/client id combination not found.
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:12 [error]: MFA verification failed for user testuser: Username/client id combination not found.
+      Metadata: {
+        "error": {
+          "name": "IdPError",
+          "message": "Username/client id combination not found.",
+          "stack": "IdPError: Username/client id combination not found.\n    at CognitoAuthStrategy.handleCognitoError (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\infrastructure\\adapters\\cognito\\CognitoAuthStrategy.ts:221:23)\n    at CognitoAuthStrategy.respondToAuthChallenge (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\infrastructure\\adapters\\cognito\\CognitoAuthStrategy.ts:121:37)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at AuthService.verifyMfa (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\application\\services\\auth.service.ts:101:28)\n    at AuthController.verifyMfa (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\controllers\\auth.controller.ts:76:28)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:12 [error]: Username/client id combination not found.
+      Metadata: {
+        "error": {
+          "name": "IdPError",
+          "message": "Username/client id combination not found.",
+          "stack": "IdPError: Username/client id combination not found.\n    at CognitoAuthStrategy.handleCognitoError (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\infrastructure\\adapters\\cognito\\CognitoAuthStrategy.ts:221:23)\n    at CognitoAuthStrategy.respondToAuthChallenge (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\infrastructure\\adapters\\cognito\\CognitoAuthStrategy.ts:121:37)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at AuthService.verifyMfa (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\application\\services\\auth.service.ts:101:28)\n    at AuthController.verifyMfa (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\controllers\\auth.controller.ts:76:28)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:12 [error]: code: Code must be numeric
+      Metadata: {
+        "error": {
+          "name": "ValidationError",
+          "message": "code: Code must be numeric",
+          "stack": "ValidationError: code: Code must be numeric\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\middlewares\\validation.middleware.ts:34:22\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:295:15\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at router (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:60:12)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at router (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:60:12)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at requestMetricsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\middlewares\\requestMetrics.middleware.ts:26:3)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:147:12)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at urlencodedParser (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\body-parser@2.2.0\\node_modules\\body-parser\\lib\\types\\urlencoded.js:57:7)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\body-parser@2.2.0\\node_modules\\body-parser\\lib\\read.js:132:5\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n    at invokeCallback (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\raw-body@3.0.0\\node_modules\\raw-body\\index.js:238:16)\n    at done (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\raw-body@3.0.0\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\raw-body@3.0.0\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:519:28)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:12 [error]: Token refresh failed: User pool client testClientId123 does not exist.
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:12 [error]: Token refresh failed: User pool client testClientId123 does not exist.
+      Metadata: {
+        "error": {
+          "name": "IdPError",
+          "message": "User pool client testClientId123 does not exist.",
+          "stack": "IdPError: User pool client testClientId123 does not exist.\n    at CognitoAuthStrategy.handleCognitoError (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\infrastructure\\adapters\\cognito\\CognitoAuthStrategy.ts:221:23)\n    at CognitoAuthStrategy.refreshToken (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\infrastructure\\adapters\\cognito\\CognitoAuthStrategy.ts:130:37)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at AuthService.refresh (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\application\\services\\auth.service.ts:122:28)\n    at AuthController.refresh (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\controllers\\auth.controller.ts:29:28)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:12 [error]: Token refresh failed: User pool client testClientId123 does not exist.
+      Metadata: {
+        "error": {
+          "name": "AuthenticationError",
+          "message": "Token refresh failed: User pool client testClientId123 does not exist.",
+          "stack": "AuthenticationError: Token refresh failed: User pool client testClientId123 does not exist.\n    at AuthService.refresh (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\application\\services\\auth.service.ts:130:19)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at AuthController.refresh (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\controllers\\auth.controller.ts:29:28)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:12 [error]: Token refresh failed: User pool client testClientId123 does not exist.
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:12 [error]: Token refresh failed: User pool client testClientId123 does not exist.
+      Metadata: {
+        "error": {
+          "name": "IdPError",
+          "message": "User pool client testClientId123 does not exist.",
+          "stack": "IdPError: User pool client testClientId123 does not exist.\n    at CognitoAuthStrategy.handleCognitoError (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\infrastructure\\adapters\\cognito\\CognitoAuthStrategy.ts:221:23)\n    at CognitoAuthStrategy.refreshToken (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\infrastructure\\adapters\\cognito\\CognitoAuthStrategy.ts:130:37)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at AuthService.refresh (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\application\\services\\auth.service.ts:122:28)\n    at AuthController.refresh (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\controllers\\auth.controller.ts:29:28)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:12 [error]: Token refresh failed: User pool client testClientId123 does not exist.
+      Metadata: {
+        "error": {
+          "name": "AuthenticationError",
+          "message": "Token refresh failed: User pool client testClientId123 does not exist.",
+          "stack": "AuthenticationError: Token refresh failed: User pool client testClientId123 does not exist.\n    at AuthService.refresh (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\application\\services\\auth.service.ts:130:19)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at AuthController.refresh (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\controllers\\auth.controller.ts:29:28)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:13 [error]: Error processing request POST /api/auth/forgot-password: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:13 [error]: Error processing request POST /api/auth/forgot-password: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:13 [error]: Error processing request POST /api/auth/forgot-password: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:13 [error]: Error processing request POST /api/auth/forgot-password: TypeError
+      Metadata: {
+        "error": {
+          "name": "TypeError",
+          "message": "unexpected reply from redis client",
+          "stack": "TypeError: unexpected reply from redis client\n    at RedisStore.loadIncrementScript (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:108:13)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at evalCommand (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b\\node_modules\\rate-limit-redis\\dist\\index.cjs:136:9)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:13 [error]: Authorization header missing or invalid
+      Metadata: {
+        "error": {
+          "name": "AuthenticationError",
+          "message": "Authorization header missing or invalid",
+          "stack": "AuthenticationError: Authorization header missing or invalid\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\middlewares\\auth.guard.middleware.ts:16:25\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:295:15\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at router (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:60:12)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at router (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:60:12)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at requestMetricsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\middlewares\\requestMetrics.middleware.ts:26:3)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:147:12)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at urlencodedParser (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\body-parser@2.2.0\\node_modules\\body-parser\\lib\\types\\urlencoded.js:68:7)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at jsonParser (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\body-parser@2.2.0\\node_modules\\body-parser\\lib\\types\\json.js:100:7)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\app.ts:83:9\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at cors (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:188:7)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:224:17\n    at originCallback (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:214:15)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:219:13\n    at optionsCallback (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:199:9)\n    at corsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:204:7)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:531:6)\n    at xXssProtectionMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:311:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xPoweredByMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:304:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xPermittedCrossDomainPoliciesMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:297:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xFrameOptionsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:281:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xDownloadOptionsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:261:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xDnsPrefetchControlMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:254:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xContentTypeOptionsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:246:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at strictTransportSecurityMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:239:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at referrerPolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:207:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at originAgentClusterMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:182:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at crossOriginResourcePolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:175:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at crossOriginOpenerPolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:159:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at contentSecurityPolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:124:4)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at helmetMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:533:6)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\express@5.1.0\\node_modules\\express\\lib\\application.js:177:15)\n    at Server.app (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\express@5.1.0\\node_modules\\express\\lib\\express.js:38:9)\n    at Server.emit (node:events:519:28)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:13 [error]: Authorization header missing or invalid
+      Metadata: {
+        "error": {
+          "name": "AuthenticationError",
+          "message": "Authorization header missing or invalid",
+          "stack": "AuthenticationError: Authorization header missing or invalid\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\middlewares\\auth.guard.middleware.ts:16:25\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:295:15\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at router (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:60:12)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at router (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:60:12)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at requestMetricsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\middlewares\\requestMetrics.middleware.ts:26:3)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:147:12)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at urlencodedParser (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\body-parser@2.2.0\\node_modules\\body-parser\\lib\\types\\urlencoded.js:68:7)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at jsonParser (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\body-parser@2.2.0\\node_modules\\body-parser\\lib\\types\\json.js:100:7)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\app.ts:83:9\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at cors (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:188:7)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:224:17\n    at originCallback (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:214:15)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:219:13\n    at optionsCallback (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:199:9)\n    at corsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:204:7)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:531:6)\n    at xXssProtectionMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:311:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xPoweredByMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:304:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xPermittedCrossDomainPoliciesMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:297:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xFrameOptionsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:281:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xDownloadOptionsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:261:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xDnsPrefetchControlMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:254:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xContentTypeOptionsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:246:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at strictTransportSecurityMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:239:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at referrerPolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:207:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at originAgentClusterMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:182:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at crossOriginResourcePolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:175:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at crossOriginOpenerPolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:159:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at contentSecurityPolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:124:4)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at helmetMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:533:6)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\express@5.1.0\\node_modules\\express\\lib\\application.js:177:15)\n    at Server.app (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\express@5.1.0\\node_modules\\express\\lib\\express.js:38:9)\n    at Server.emit (node:events:519:28)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:13 [error]: Content-Type must be application/json
+      Metadata: {
+        "error": {
+          "name": "ValidationError",
+          "message": "Content-Type must be application/json",
+          "stack": "ValidationError: Content-Type must be application/json\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\app.ts:79:22\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at cors (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:188:7)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:224:17\n    at originCallback (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:214:15)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:219:13\n    at optionsCallback (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:199:9)\n    at corsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\cors@2.8.5\\node_modules\\cors\\lib\\index.js:204:7)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:531:6)\n    at xXssProtectionMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:311:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xPoweredByMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:304:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xPermittedCrossDomainPoliciesMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:297:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xFrameOptionsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:281:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xDownloadOptionsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:261:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xDnsPrefetchControlMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:254:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at xContentTypeOptionsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:246:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at strictTransportSecurityMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:239:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at referrerPolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:207:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at originAgentClusterMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:182:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at crossOriginResourcePolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:175:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at crossOriginOpenerPolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:159:3)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at contentSecurityPolicyMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:124:4)\n    at internalNext (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:529:6)\n    at helmetMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\helmet@8.1.0\\node_modules\\helmet\\index.cjs:533:6)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\express@5.1.0\\node_modules\\express\\lib\\application.js:177:15)\n    at Server.app (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\express@5.1.0\\node_modules\\express\\lib\\express.js:38:9)\n    at Server.emit (node:events:519:28)\n    at parserOnIncoming (node:_http_server:1184:12)\n    at HTTPParser.parserOnHeadersComplete (node:_http_common:122:17)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      2026-02-24 17:07:13 [error]: Authorization header missing or invalid
+      Metadata: {
+        "error": {
+          "name": "AuthenticationError",
+          "message": "Authorization header missing or invalid",
+          "stack": "AuthenticationError: Authorization header missing or invalid\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\middlewares\\auth.guard.middleware.ts:16:25\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:295:15\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at router (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:60:12)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Function.handle (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:186:3)\n    at router (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:60:12)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at requestMetricsMiddleware (E:\\NodeJS\\PBAC_Auth\\authentication-service\\src\\api\\middlewares\\requestMetrics.middleware.ts:26:3)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:147:12)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at urlencodedParser (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\body-parser@2.2.0\\node_modules\\body-parser\\lib\\types\\urlencoded.js:57:7)\n    at Layer.handleRequest (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:342:13)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:297:9\n    at processParams (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:582:12)\n    at next (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\router@2.2.0\\node_modules\\router\\index.js:291:5)\n    at E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\body-parser@2.2.0\\node_modules\\body-parser\\lib\\read.js:132:5\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n    at invokeCallback (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\raw-body@3.0.0\\node_modules\\raw-body\\index.js:238:16)\n    at done (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\raw-body@3.0.0\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (E:\\NodeJS\\PBAC_Auth\\authentication-service\\node_modules\\.pnpm\\raw-body@3.0.0\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:519:28)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)"
+        }
+      }
+
+      at Console.log (node_modules/.pnpm/winston@3.17.0/node_modules/winston/lib/winston/transports/console.js:87:23)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ System Endpoints ΓÇ║ should return 200 OK for GET /api/system/health
+
+    TypeError: unexpected reply from redis client
+
+      at RedisStore.loadIncrementScript (node_modules/.pnpm/rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b/node_modules/rate-limit-redis/dist/index.cjs:108:13)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ System Endpoints ΓÇ║ should return 200 OK for GET /api/system/health
+
+    TypeError: unexpected reply from redis client
+
+      at RedisStore.loadGetScript (node_modules/.pnpm/rate-limit-redis@4.3.1_expr_60b8f7781b27b4d9506c051832a8b81b/node_modules/rate-limit-redis/dist/index.cjs:122:13)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Validation ΓÇ║ POST /api/auth/signup ΓÇ║ should return 400 for missing required fields
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+      109 |           .send({});
+      110 |
+    > 111 |         expect(response.status).toBe(400);
+          |                                 ^
+      112 |         expect(response.body).toHaveProperty('message');
+      113 |         expect(response.body).toHaveProperty('name', 'ValidationError');
+      114 |         expect(response.body).toHaveProperty('status', 'error');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:111:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Validation ΓÇ║ POST /api/auth/signup ΓÇ║ should return 400 for invalid email format
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+      127 |           });
+      128 |
+    > 129 |         expect(response.status).toBe(400);
+          |                                 ^
+      130 |         expect(response.body).toHaveProperty('message');
+      131 |         expect(response.body).toHaveProperty('name', 'ValidationError');
+      132 |         expect(response.body.message).toContain('email');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:129:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Validation ΓÇ║ POST /api/auth/signup ΓÇ║ should return 400 for short password
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+      145 |           });
+      146 |
+    > 147 |         expect(response.status).toBe(400);
+          |                                 ^
+      148 |         expect(response.body).toHaveProperty('message');
+      149 |         expect(response.body).toHaveProperty('name', 'ValidationError');
+      150 |         expect(response.body.message).toContain('Password must be at least 8 characters');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:147:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Validation ΓÇ║ POST /api/auth/login ΓÇ║ should return 400 for missing username
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+      160 |           });
+      161 |
+    > 162 |         expect(response.status).toBe(400);
+          |                                 ^
+      163 |         expect(response.body).toHaveProperty('message');
+      164 |         expect(response.body).toHaveProperty('name', 'ValidationError');
+      165 |         expect(response.body.message).toContain('Username is required');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:162:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Validation ΓÇ║ POST /api/auth/login ΓÇ║ should return 400 for missing password
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+      173 |           });
+      174 |
+    > 175 |         expect(response.status).toBe(400);
+          |                                 ^
+      176 |         expect(response.body).toHaveProperty('message');
+      177 |         expect(response.body).toHaveProperty('name', 'ValidationError');
+      178 |         expect(response.body.message).toContain('Password is required');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:175:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Validation ΓÇ║ POST /api/auth/confirm-signup ΓÇ║ should return 400 for missing username
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+      188 |           });
+      189 |
+    > 190 |         expect(response.status).toBe(400);
+          |                                 ^
+      191 |         expect(response.body).toHaveProperty('message');
+      192 |         expect(response.body).toHaveProperty('name', 'ValidationError');
+      193 |         expect(response.body.message).toContain('Username is required');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:190:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/signup ΓÇ║ should successfully register a new user
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 500
+
+      221 |           });
+      222 |
+    > 223 |         expect(response.status).toBe(201);
+          |                                 ^
+      224 |         expect(response.body).toHaveProperty('userSub', 'test-user-id');
+      225 |         expect(response.body).toHaveProperty('userConfirmed', false);
+      226 |         expect(response.body).toHaveProperty('codeDeliveryDetails');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:223:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/signup ΓÇ║ should handle signup errors from auth adapter
+
+    expect(jest.fn()).toHaveBeenCalled()
+
+    Expected number of calls: >= 1
+    Received number of calls:    0
+
+      249 |         expect(response.status).toBe(500);
+      250 |         expect(response.body).toHaveProperty('message');
+    > 251 |         expect(mockAuthAdapter.signUp).toHaveBeenCalled();
+          |                                        ^
+      252 |       });
+      253 |     });
+      254 |
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:251:40)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/confirm-signup ΓÇ║ should successfully confirm user signup
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      265 |           });
+      266 |
+    > 267 |         expect(response.status).toBe(200);
+          |                                 ^
+      268 |         expect(response.body).toHaveProperty('message');
+      269 |         expect(mockAuthAdapter.confirmSignUp).toHaveBeenCalledWith('testuser', '123456');
+      270 |       });
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:267:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/confirm-signup ΓÇ║ should handle invalid confirmation code
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 500
+
+      281 |           });
+      282 |
+    > 283 |         expect(response.status).toBe(401);
+          |                                 ^
+      284 |         expect(response.body).toHaveProperty('message');
+      285 |         expect(mockAuthAdapter.confirmSignUp).toHaveBeenCalled();
+      286 |       });
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:283:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/login ΓÇ║ should successfully login with valid credentials
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      305 |           });
+      306 |
+    > 307 |         expect(response.status).toBe(200);
+          |                                 ^
+      308 |         expect(response.body).toHaveProperty('accessToken', 'mock-access-token');
+      309 |         expect(response.body).toHaveProperty('refreshToken', 'mock-refresh-token');
+      310 |         expect(response.body).toHaveProperty('idToken', 'mock-id-token');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:307:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/login ΓÇ║ should handle MFA challenge during login
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 500
+
+      336 |           });
+      337 |
+    > 338 |         expect(response.status).toBe(401);
+          |                                 ^
+      339 |         expect(response.body).toHaveProperty('name', 'MfaRequiredError');
+      340 |         expect(response.body).toHaveProperty('session', 'mock-session-token');
+      341 |         expect(response.body).toHaveProperty('challengeName', 'SOFTWARE_TOKEN_MFA');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:338:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/login ΓÇ║ should handle invalid credentials
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 500
+
+      354 |           });
+      355 |
+    > 356 |         expect(response.status).toBe(401);
+          |                                 ^
+      357 |         expect(response.body).toHaveProperty('message');
+      358 |         expect(mockAuthAdapter.login).toHaveBeenCalled();
+      359 |       });
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:356:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/verify-mfa ΓÇ║ should successfully verify MFA and return tokens
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      380 |           });
+      381 |
+    > 382 |         expect(response.status).toBe(200);
+          |                                 ^
+      383 |         expect(response.body).toHaveProperty('accessToken', 'mock-access-token-after-mfa');
+      384 |         expect(response.body).toHaveProperty('refreshToken', 'mock-refresh-token-after-mfa');
+      385 |         expect(response.body).toHaveProperty('idToken', 'mock-id-token-after-mfa');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:382:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/verify-mfa ΓÇ║ should handle invalid MFA code
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 400
+
+      401 |           ); // Removed extra closing brace here
+      402 |
+    > 403 |         expect(response.status).toBe(401);
+          |                                 ^
+      404 |         expect(response.body).toHaveProperty('message');
+      405 |         expect(mockAuthAdapter.respondToAuthChallenge).toHaveBeenCalled();
+      406 |       });
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:403:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/refresh-token ΓÇ║ should successfully refresh tokens
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      424 |           ); // Removed extra closing brace here
+      425 |
+    > 426 |         expect(response.status).toBe(200);
+          |                                 ^
+      427 |         expect(response.body).toHaveProperty('accessToken', 'new-mock-access-token');
+      428 |         expect(response.body).toHaveProperty('idToken', 'new-mock-id-token');
+      429 |         expect(mockAuthAdapter.refreshToken).toHaveBeenCalledWith('mock-refresh-token');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:426:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/refresh-token ΓÇ║ should handle invalid refresh token
+
+    expect(jest.fn()).toHaveBeenCalled()
+
+    Expected number of calls: >= 1
+    Received number of calls:    0
+
+      443 |         expect(response.status).toBe(401);
+      444 |         expect(response.body).toHaveProperty('message');
+    > 445 |         expect(mockAuthAdapter.refreshToken).toHaveBeenCalled();
+          |                                              ^
+      446 |       });
+      447 |     });
+      448 |
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:445:46)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/forgot-password ΓÇ║ should successfully initiate forgot password flow
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      462 |           });
+      463 |
+    > 464 |         expect(response.status).toBe(200);
+          |                                 ^
+      465 |         expect(response.body).toHaveProperty('message');
+      466 |         expect(response.body.message).toBe('If a matching account was found, a password reset code has been sent.');
+      467 |         expect(mockAuthAdapter.initiateForgotPassword).toHaveBeenCalledWith('testuser@example.com');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:464:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/forgot-password ΓÇ║ should handle user not found with same response (prevent enumeration)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      482 |           });
+      483 |
+    > 484 |         expect(response.status).toBe(200);
+          |                                 ^
+      485 |         expect(response.body).toHaveProperty('message');
+      486 |         expect(response.body.message).toBe('If a matching account was found, a password reset code has been sent.');
+      487 |         expect(mockAuthAdapter.initiateForgotPassword).toHaveBeenCalledWith('nonexistent@example.com');
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:484:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/forgot-password ΓÇ║ should handle invalid email format
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+      495 |           });
+      496 |
+    > 497 |         expect(response.status).toBe(400);
+          |                                 ^
+      498 |         expect(response.body).toHaveProperty('name', 'ValidationError');
+      499 |         expect(response.body.message).toContain('Invalid email format');
+      500 |       });
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:497:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Auth Endpoints - Business Logic ΓÇ║ POST /api/auth/forgot-password ΓÇ║ should handle rate limiting errors
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      513 |
+      514 |         // Should still return 200 for security, but with same generic message
+    > 515 |         expect(response.status).toBe(200);
+          |                                 ^
+      516 |         expect(response.body).toHaveProperty('message');
+      517 |         expect(response.body.message).toBe('If a matching account was found, a password reset code has been sent.');
+      518 |       });
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:515:33)
+
+  ΓùÅ Auth Integration Tests ΓÇ║ Protected Endpoints ΓÇ║ POST /api/auth/logout ΓÇ║ should return 401 for missing authorization header
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 400
+
+      546 |         const response = await request(app).post('/api/auth/logout');
+      547 |
+    > 548 |         expect(response.status).toBe(401);
+          |                                 ^
+      549 |         expect(response.body).toHaveProperty('message');
+      550 |       });
+      551 |     });
+
+      at Object.<anonymous> (tests/integration/auth.api.integration.test.ts:548:33)
+
+FAIL tests/integration/auth.service.integration.test.ts
+  ΓùÅ Comprehensive Authentication Integration Tests ΓÇ║ Complete Authentication Flow ΓÇ║ should complete full signup and login flow
+
+    AuthenticationError: Confirmation failed: Cannot read properties of undefined (reading 'catch')
+
+      202 |                 throw error; // Re-throw known errors
+      203 |             }
+    > 204 |             throw new AuthenticationError(`Confirmation failed: ${error.message || 'An unexpected error occurred'}`);
+          |                   ^
+      205 |         }
+      206 |     }
+      207 |
+
+      at AuthService.confirmSignUp (src/application/services/auth.service.ts:204:19)
+      at Object.<anonymous> (tests/integration/auth.service.integration.test.ts:85:7)
+
+  ΓùÅ Comprehensive Authentication Integration Tests ΓÇ║ Service Integration with Multiple Dependencies ΓÇ║ should handle complex flow with all services
+
+    AuthenticationError: Confirmation failed: Cannot read properties of undefined (reading 'catch')
+
+      202 |                 throw error; // Re-throw known errors
+      203 |             }
+    > 204 |             throw new AuthenticationError(`Confirmation failed: ${error.message || 'An unexpected error occurred'}`);
+          |                   ^
+      205 |         }
+      206 |     }
+      207 |
+
+      at AuthService.confirmSignUp (src/application/services/auth.service.ts:204:19)
+      at Object.<anonymous> (tests/integration/auth.service.integration.test.ts:572:7)
+
+PASS tests/integration/factory.integration.test.ts
+PASS tests/integration/env-verification.integration.test.ts
+  ΓùÅ Console
+
+    console.log
+      SHARED_SECRET: test-shared-secret
+
+      at Object.<anonymous> (tests/integration/env-verification.integration.test.ts:11:13)
+
+    console.log
+      REDIS_URL: redis://192.168.2.252:6379
+
+      at Object.<anonymous> (tests/integration/env-verification.integration.test.ts:19:13)
+
+    console.log
+      USE_REDIS_BLACKLIST: true
+
+      at Object.<anonymous> (tests/integration/env-verification.integration.test.ts:25:13)
+
+    console.log
+      Integration test environment variables:
+
+      at Object.<anonymous> (tests/integration/env-verification.integration.test.ts:29:13)
+
+    console.log
+      SHARED_SECRET: test-shared-secret
+
+      at Object.<anonymous> (tests/integration/env-verification.integration.test.ts:30:13)
+
+    console.log
+      REDIS_URL: redis://192.168.2.252:6379
+
+      at Object.<anonymous> (tests/integration/env-verification.integration.test.ts:31:13)
+
+    console.log
+      USE_REDIS_BLACKLIST: true
+
+      at Object.<anonymous> (tests/integration/env-verification.integration.test.ts:32:13)
+
+    console.log
+      NODE_ENV: test
+
+      at Object.<anonymous> (tests/integration/env-verification.integration.test.ts:33:13)
+
+
+Test Suites: 2 failed, 2 passed, 4 total
+Tests:       25 failed, 37 passed, 62 total
+Snapshots:   0 total
+Time:        26.767 s, estimated 42 s
+Ran all test suites matching /tests\\integration\\auth.service.integration.test.ts|tests\\integration/i.
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.

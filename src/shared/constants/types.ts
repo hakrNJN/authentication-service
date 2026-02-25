@@ -9,6 +9,7 @@ export const TYPES = {
     AuthService: Symbol.for('AuthService'), // Assuming an AuthService will exist
     AuthAdapter: Symbol.for('AuthAdapter'), // Interface for the IdP adapter
     TokenBlacklistService: Symbol.for('TokenBlacklistService'),
+    EventBus: Symbol.for('EventBus'),
 
     // Universal Auth Tokens
     AuthStrategy: Symbol.for('AuthStrategy'),

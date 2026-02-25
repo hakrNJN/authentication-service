@@ -13,6 +13,25 @@ process.env.COGNITO_CLIENT_ID = 'testClientId123';
 // REDIS_URL is set by individual test scripts (unit uses localhost, integration/e2e use remote)
 process.env.USE_REDIS_BLACKLIST = 'true';
 
+// Mock Redis globally to prevent connection issues and open handles in tests
+jest.mock('ioredis', () => {
+  return function () {
+    return {
+      on: () => { },
+      setex: async () => 'OK',
+      get: async () => null,
+      call: async (...args: any[]) => {
+        if (args[0] === 'SCRIPT' && args[1] === 'LOAD') {
+          return 'mock-sha-12345';
+        }
+        return [1, Date.now() + 60000];
+      },
+      disconnect: async () => undefined,
+      quit: async () => 'OK',
+    };
+  };
+});
+
 // Global mock for applyResilience module
 jest.mock('../src/infrastructure/resilience/applyResilience', () => ({
   applyCircuitBreaker: jest.fn((commandFn: (...args: any[]) => Promise<any>, _circuitBreakerId: string, _logger: any) => {

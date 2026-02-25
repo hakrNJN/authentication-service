@@ -18,7 +18,7 @@ import { mockConfigService } from '../../../mocks/mockConfigService';
 import { mockLogger } from '../../../mocks/mockLogger';
 
 // Mock IAuthStrategy
-const mockAuthStrategy = {
+let mockAuthStrategy = {
     getAuthMode: jest.fn(),
     login: jest.fn(),
     validateToken: jest.fn(),
@@ -36,16 +36,39 @@ const mockAuthStrategy = {
 
 describe('AuthService', () => {
     let authService: AuthService;
+    let mockTokenBlacklistService: jest.Mocked<any> = {} as any;
+    let mockEventBus: jest.Mocked<any> = {} as any;
 
     beforeEach(() => {
         jest.clearAllMocks();
+
+        // Initialize mocks
+        mockAuthStrategy = {
+            getAuthMode: jest.fn(),
+            login: jest.fn(),
+            validateToken: jest.fn(),
+            respondToAuthChallenge: jest.fn(),
+            refreshToken: jest.fn(),
+            getUserFromToken: jest.fn(),
+            signOut: jest.fn(),
+            signUp: jest.fn(),
+            confirmSignUp: jest.fn(),
+            initiateForgotPassword: jest.fn(),
+            confirmForgotPassword: jest.fn(),
+            changePassword: jest.fn(),
+            healthCheck: jest.fn(),
+        };
+        // Initialize mocks (mockLogger and mockConfigService are already mocks imported from top)
+        mockTokenBlacklistService = { addToBlacklist: jest.fn(), isBlacklisted: jest.fn() };
+        mockEventBus = { publish: jest.fn().mockResolvedValue(undefined) }; // Mock EventBus
 
         // Clear container instances and register mocks
         container.clearInstances();
         container.registerInstance(TYPES.AuthStrategy, mockAuthStrategy);
         container.registerInstance(TYPES.Logger, mockLogger);
         container.registerInstance(TYPES.ConfigService, mockConfigService);
-        container.registerInstance(TYPES.TokenBlacklistService, { addToBlacklist: jest.fn(), isBlacklisted: jest.fn() }); // Mock blacklist too
+        container.registerInstance(TYPES.TokenBlacklistService, mockTokenBlacklistService);
+        container.registerInstance(TYPES.EventBus, mockEventBus);
 
         authService = container.resolve(AuthService);
     });

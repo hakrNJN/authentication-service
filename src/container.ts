@@ -25,6 +25,15 @@ container.registerSingleton<ILogger>(TYPES.Logger, WinstonLogger);
 // Configuration Service Implementation
 container.registerSingleton<IConfigService>(TYPES.ConfigService, EnvironmentConfigService);
 
+// Event Bus Implementation
+import { EventBusFactory } from './infrastructure/events/EventBusFactory';
+container.registerSingleton(EventBusFactory);
+container.register(TYPES.EventBus, {
+    useFactory: () => {
+        return EventBusFactory.createEventBus();
+    }
+});
+
 // --- Register Adapters (Singletons usually appropriate) ---
 
 // Universal Auth Strategy

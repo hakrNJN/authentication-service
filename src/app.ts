@@ -75,6 +75,11 @@ export function createApp(): Express & { shutdown?: () => Promise<void> } {
     app.use((req: Request, res: Response, next: NextFunction) => {
         if (req.path.startsWith('/api/auth/')) {
             const contentType = req.get('content-type');
+            const contentLength = req.get('content-length');
+            // Allow empty POST requests without application/json (e.g. logout)
+            if (req.method === 'POST' && (!contentLength || contentLength === '0')) {
+                return next();
+            }
             if (req.method === 'POST' && (!contentType || !contentType.includes('application/json'))) {
                 next(new ValidationError('Content-Type must be application/json'));
                 return;

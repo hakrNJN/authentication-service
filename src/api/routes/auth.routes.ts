@@ -3,6 +3,7 @@ import { container } from '../../container';
 import { AuthController } from '../controllers/auth.controller';
 import { validationMiddleware } from '../middlewares/validation.middleware';
 // Import Zod schemas
+import { IConfigService } from '../../application/interfaces/IConfigService';
 import { ILogger } from '../../application/interfaces/ILogger';
 import { TYPES } from '../../shared/constants/types';
 import {
@@ -19,6 +20,12 @@ import { authGuardMiddleware } from '../middlewares/auth.guard.middleware';
 // Resolve dependencies
 const authController = container.resolve(AuthController);
 const logger = container.resolve<ILogger>(TYPES.Logger);
+const configService = container.resolve<IConfigService>(TYPES.ConfigService);
+
+// Initialize Rate Limiter
+import { RateLimiterFactory } from '../middleware/RateLimiterFactory';
+const rateLimiterFactory = new RateLimiterFactory(configService);
+const authLimiter = rateLimiterFactory.getAuthLimiter();
 
 // Create router instance
 const router = Router();
@@ -26,19 +33,19 @@ const router = Router();
 // --- Define Authentication Routes ---
 
 // Signup & Confirmation
-router.post('/signup', validationMiddleware(SignUpSchema, logger), authController.signUp.bind(authController));
-router.post('/confirm-signup', validationMiddleware(ConfirmSignUpSchema, logger), authController.confirmSignUp.bind(authController));
+router.post('/signup', authLimiter, validationMiddleware(SignUpSchema, logger), authController.signUp.bind(authController));
+router.post('/confirm-signup', authLimiter, validationMiddleware(ConfirmSignUpSchema, logger), authController.confirmSignUp.bind(authController));
 
 // Login & MFA Verification
-router.post('/login', validationMiddleware(LoginSchema, logger), authController.login.bind(authController));
+router.post('/login', authLimiter, validationMiddleware(LoginSchema, logger), authController.login.bind(authController));
 router.post('/verify-mfa', validationMiddleware(VerifyMfaSchema, logger), authController.verifyMfa.bind(authController)); // New route
 
 // Refresh Token
 router.post('/refresh-token', validationMiddleware(RefreshTokenSchema, logger), authController.refresh.bind(authController));
 
 // Password Management
-router.post('/forgot-password', validationMiddleware(ForgotPasswordSchema, logger), authController.forgotPassword.bind(authController));
-router.post('/reset-password', validationMiddleware(ResetPasswordSchema, logger), authController.resetPassword.bind(authController));
+router.post('/forgot-password', authLimiter, validationMiddleware(ForgotPasswordSchema, logger), authController.forgotPassword.bind(authController));
+router.post('/reset-password', authLimiter, validationMiddleware(ResetPasswordSchema, logger), authController.resetPassword.bind(authController));
 // TODO: Apply authGuardMiddleware to '/change-password'
 router.post(
     '/change-password',

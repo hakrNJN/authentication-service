@@ -8,6 +8,7 @@ import { TYPES } from '../../shared/constants/types';
 import { ChallengeNameType, CodeDeliveryDetailsType, LimitExceededException } from '@aws-sdk/client-cognito-identity-provider';
 import { AuthenticationError, MfaRequiredError, ValidationError } from '../../domain';
 import { ITokenBlacklistService } from '../interfaces/ITokenBlacklistService';
+import { IEventBus } from '../interfaces/IEventBus';
 import { BaseError, NotFoundError } from '../../shared/errors/BaseError';
 import { decode } from 'jsonwebtoken';
 
@@ -19,7 +20,8 @@ export class AuthService implements IAuthService {
         @inject(TYPES.Logger) private logger: ILogger,
         @inject(TYPES.ConfigService) private configService: IConfigService,
         @inject(TYPES.AuthStrategy) private authStrategy: IAuthStrategy,
-        @inject(TYPES.TokenBlacklistService) private tokenBlacklistService: ITokenBlacklistService
+        @inject(TYPES.TokenBlacklistService) private tokenBlacklistService: ITokenBlacklistService,
+        @inject(TYPES.EventBus) private eventBus: IEventBus
     ) {
         this.logger.info('AuthService initialized.');
     }
@@ -184,6 +186,16 @@ export class AuthService implements IAuthService {
         try {
             await this.authStrategy.confirmSignUp(username, confirmationCode);
             this.logger.info(`Signup confirmed for: ${username}`);
+
+            // Asynchronously fire a UserCreatedEvent so other microservices (like Authorization)
+            // can pre-warm caches or configure default tenants without blocking this HTTP task.
+            this.eventBus.publish('UserCreatedEvent', {
+                userId: username,
+                timestamp: new Date().toISOString()
+            }).catch(eventErr => {
+                this.logger.error(`[EventBus] Failed to publish UserCreatedEvent for ${username}`, eventErr);
+            });
+
         } catch (error: any) {
             this.logger.error(`Signup confirmation failed for ${username}: ${error.message}`, error);
             if (error instanceof AuthenticationError || error instanceof NotFoundError) {
