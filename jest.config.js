@@ -1,7 +1,10 @@
+const dotenv = require('dotenv');
+dotenv.config({ path: '.env.test', override: true });
+
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/tests'],
+  roots: ['<rootDir>/tests/unit'],
   setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   testMatch: ['**/*.test.ts'],
@@ -13,11 +16,11 @@ module.exports = {
     '!src/**/*.d.ts',
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov'],
-  resetMocks: true,
+  coverageReporters: ['text', 'text-summary', 'lcov'],
+  resetMocks: false,
   clearMocks: true,
   restoreMocks: true,
-  maxWorkers: 1, // Force running in a single process
-  forceExit: true, // Force Jest to exit after tests complete
-  detectOpenHandles: true, // Help detect what's keeping Jest open
+  maxWorkers: 1,
+  forceExit: true,
+  detectOpenHandles: true,
 };

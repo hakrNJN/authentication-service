@@ -1,35 +1,38 @@
 // Jest global setup for all tests
 
+// Load environment variables from .env.test before anything else
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.test', override: true });
+
 // Ensure reflect-metadata is loaded for tsyringe DI
 import 'reflect-metadata';
-// Set test environment variables
-process.env.NODE_ENV = 'test';
-process.env.PORT = '3000';
-process.env.LOG_LEVEL = 'error';
-process.env.AWS_REGION = 'us-east-1';
-process.env.COGNITO_USER_POOL_ID = 'us-east-1_test';
-process.env.COGNITO_CLIENT_ID = 'testClientId123';
+// Set test environment variables - use .env.test values if available
+process.env.NODE_ENV = process.env.NODE_ENV || 'test';
+process.env.PORT = process.env.PORT || '3002';
+process.env.LOG_LEVEL = process.env.LOG_LEVEL || 'error';
+process.env.AWS_REGION = process.env.AWS_REGION || 'local';
+process.env.COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID || 'local_test_pool';
+process.env.COGNITO_CLIENT_ID = process.env.COGNITO_CLIENT_ID || 'testClientId123';
 
 // REDIS_URL is set by individual test scripts (unit uses localhost, integration/e2e use remote)
 process.env.USE_REDIS_BLACKLIST = 'true';
 
-// Mock Redis globally to prevent connection issues and open handles in tests
+// Mock Redis globally using jest.fn() so tests can call .mockImplementation() on it
 jest.mock('ioredis', () => {
-  return function () {
-    return {
-      on: () => { },
-      setex: async () => 'OK',
-      get: async () => null,
-      call: async (...args: any[]) => {
-        if (args[0] === 'SCRIPT' && args[1] === 'LOAD') {
-          return 'mock-sha-12345';
-        }
-        return [1, Date.now() + 60000];
-      },
-      disconnect: async () => undefined,
-      quit: async () => 'OK',
-    };
-  };
+  const MockRedis = jest.fn().mockImplementation(() => ({
+    on: jest.fn(),
+    setex: jest.fn().mockResolvedValue('OK'),
+    get: jest.fn().mockResolvedValue(null),
+    call: jest.fn().mockImplementation(async (...args: any[]) => {
+      if (args[0] === 'SCRIPT' && args[1] === 'LOAD') {
+        return 'mock-sha-12345';
+      }
+      return [1, Date.now() + 60000];
+    }),
+    disconnect: jest.fn().mockResolvedValue(undefined),
+    quit: jest.fn().mockResolvedValue('OK'),
+  }));
+  return MockRedis;
 });
 
 // Global mock for applyResilience module
